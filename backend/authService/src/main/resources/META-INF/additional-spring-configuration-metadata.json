@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "twilio.account_sid",
+      "type": "java.lang.String",
+      "description": "twilio account SID."
+    },
+    {
+      "name": "twilio.auth_token",
+      "type": "java.lang.String",
+      "description": "twilio auth token."
+    },
+    {
+      "name": "twilio.verify_sid",
+      "type": "java.lang.String",
+      "description": "SID for twilio verify app."
+    }
+  ]
+}
