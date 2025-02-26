@@ -1,5 +1,6 @@
 #Global ignores
 HELP.md
+.DS_Store
 
 # Ignore all Gradle-related files
 **/.gradle
