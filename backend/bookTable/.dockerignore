@@ -1,0 +1,7 @@
+.env
+docker-compose.yml
+*.md
+.git
+.gitignore
+build/
+!build/libs/bookTable-0.0.1-SNAPSHOT.jar

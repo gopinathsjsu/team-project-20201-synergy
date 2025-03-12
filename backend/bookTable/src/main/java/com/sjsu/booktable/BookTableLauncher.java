@@ -1,13 +1,13 @@
-package org.sjsu.authservice;
+package com.sjsu.booktable;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AuthServiceApplication {
+public class BookTableLauncher {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AuthServiceApplication.class, args);
+		SpringApplication.run(BookTableLauncher.class, args);
 	}
 
 }
