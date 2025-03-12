@@ -28,13 +28,13 @@ jobs:
         working-directory: ./backend/bookTable
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-coverage-report
           path: backend/bookTable/build/reports/jacoco/test/html/
 
       - name: Upload JAR Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: spring-boot-jar
           path: backend/bookTable/build/libs/*.jar
@@ -53,7 +53,7 @@ jobs:
           distribution: temurin
 
       - name: Download JAR Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: spring-boot-jar
           path: backend/bookTable/build/libs/
