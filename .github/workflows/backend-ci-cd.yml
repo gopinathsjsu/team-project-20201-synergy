@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths: [ 'backend/bookTable/**' ]
-  workflow_dispatch:                   # Manual trigger option
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   build-test-coverage:
@@ -83,13 +83,15 @@ jobs:
       - name: Install EB CLI
         run: pip install awsebcli --upgrade
 
-      - name: Initialize Elastic Beanstalk
+      - name: Configure EB CLI
         working-directory: ./backend/bookTable
-        run: eb init booktable-app --platform "Docker running on 64bit Amazon Linux 2023" --region us-west-1
+        run: |
+          mkdir -p .elasticbeanstalk
+          echo -e "branch-defaults:\n  main:\n    environment: booktable-app-env\nglobal:\n  application_name: booktable-app\n  default_region: us-west-1" > .elasticbeanstalk/config.yml
 
       - name: Deploy to Elastic Beanstalk
         working-directory: ./backend/bookTable
         run: |
           echo '{"AWSEBDockerrunVersion": "1", "Image": {"Name": "061039807046.dkr.ecr.us-west-1.amazonaws.com/booktable-app:latest", "Update": "true"}, "Ports": [{"ContainerPort": 8080, "HostPort": 80}]}' > Dockerrun.aws.json
           zip -r app.zip Dockerrun.aws.json
-          eb deploy booktable-app-env -r us-west-1
+          eb deploy booktable-app-env
