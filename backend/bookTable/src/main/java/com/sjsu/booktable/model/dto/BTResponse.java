@@ -6,6 +6,7 @@ import lombok.Data;
 public class BTResponse<T> {
     private T data;
     private String status;
+    private String errorMessage;
 
     public static <T> BTResponse<T> success(T data) {
         BTResponse<T> response = new BTResponse<>();
@@ -17,7 +18,7 @@ public class BTResponse<T> {
     public static <T> BTResponse<T> failure(String message) {
         BTResponse<T> response = new BTResponse<>();
         response.setStatus("failure");
-        response.setData((T) message);
+        response.setErrorMessage(message);
         return response;
     }
 
