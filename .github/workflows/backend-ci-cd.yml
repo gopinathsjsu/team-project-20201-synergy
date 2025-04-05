@@ -3,7 +3,7 @@ name: Spring Boot CI/CD
 on:
   push:
     branches: [ main ]
-    paths: [ 'backend/bookTable/**' ]  # Trigger only when backend files change
+    paths: [ 'backend/bookTable/**' ]
 
 jobs:
   build-test-coverage:
@@ -87,4 +87,4 @@ jobs:
         run: |
           echo '{"AWSEBDockerrunVersion": "1", "Image": {"Name": "061039807046.dkr.ecr.us-west-1.amazonaws.com/booktable-app:latest", "Update": "true"}, "Ports": [{"ContainerPort": 8080, "HostPort": 80}]}' > Dockerrun.aws.json
           zip -r app.zip Dockerrun.aws.json
-          eb deploy booktable-app-env -r us-west-1 --app booktable-app
+          eb deploy booktable-app-env -r us-west-1
