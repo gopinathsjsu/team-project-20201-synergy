@@ -1,20 +1,35 @@
 package com.sjsu.booktable.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.sjsu.booktable.model.dto.BTResponse;
+import com.sjsu.booktable.model.dto.SendOTPRequest;
+import com.sjsu.booktable.model.dto.VerifyOTPRequest;
+import com.sjsu.booktable.service.auth.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello BookTable";
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/otp/send")
+    public ResponseEntity sendOtp(@RequestBody @Valid SendOTPRequest request) {
+        return ResponseEntity.ok(BTResponse.success(authService.sendOtp(request)));
     }
 
-    @GetMapping("/hello2")
-    public String hello2() {
-        return "Hello BookTable 2";
+    @PostMapping("/otp/verify")
+    public ResponseEntity verifyOtp(@RequestBody @Valid VerifyOTPRequest request) {
+        return ResponseEntity.ok(BTResponse.success(authService.verifyOtp(request)));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity logout(@RequestHeader(value = "api-token", required = false) String token) {
+        authService.logout(token);
+        return ResponseEntity.ok(BTResponse.success("Logged out successfully"));
+    }
+
 }
