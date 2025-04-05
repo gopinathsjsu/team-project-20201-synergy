@@ -1,19 +1,24 @@
 {
   "properties": [
     {
-      "name": "twilio.account_sid",
+      "name": "cognito.userPoolId",
       "type": "java.lang.String",
-      "description": "twilio account SID."
+      "description": "Description for cognito.userPoolId."
     },
     {
-      "name": "twilio.auth_token",
+      "name": "cognito.clientId",
       "type": "java.lang.String",
-      "description": "twilio auth token."
+      "description": "Description for cognito.clientId."
     },
     {
-      "name": "twilio.verify_sid",
+      "name": "cognito.region",
       "type": "java.lang.String",
-      "description": "SID for twilio verify app."
+      "description": "Description for cognito.region."
+    },
+    {
+      "name": "cognito.clientSecret",
+      "type": "java.lang.String",
+      "description": "Description for cognito.clientSecret."
     }
   ]
 }
