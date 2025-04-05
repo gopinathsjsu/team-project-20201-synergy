@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
     paths: [ 'backend/bookTable/**' ]
+  workflow_dispatch:                   # Manual trigger option
 
 jobs:
   build-test-coverage:
