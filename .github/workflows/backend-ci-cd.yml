@@ -83,6 +83,10 @@ jobs:
       - name: Install EB CLI
         run: pip install awsebcli --upgrade
 
+      - name: Initialize Elastic Beanstalk
+        working-directory: ./backend/bookTable
+        run: eb init booktable-app --platform "Docker running on 64bit Amazon Linux 2023" --region us-west-1
+
       - name: Deploy to Elastic Beanstalk
         working-directory: ./backend/bookTable
         run: |
