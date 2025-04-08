@@ -19,6 +19,16 @@
       "name": "cognito.clientSecret",
       "type": "java.lang.String",
       "description": "Description for cognito.clientSecret."
+    },
+    {
+      "name": "aws.s3.bucket",
+      "type": "java.lang.String",
+      "description": "Description for aws.s3.bucket."
+    },
+    {
+      "name": "google.api.key",
+      "type": "java.lang.String",
+      "description": "Description for google.api.key."
     }
   ]
 }
