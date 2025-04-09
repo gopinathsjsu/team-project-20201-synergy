@@ -1,7 +1,11 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { Stack, Card, CardContent } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
 import styles from "./nearbySuggestions.module.scss";
+
+//TODO -> Build RestaurantCard component and use it here.
 
 const data = [
   { id: 1, name: "Restaurant 1", description: "Description 1" },
@@ -31,20 +35,18 @@ function NearbySuggestion(props) {
       <Typography variant="h5" color="initial">
         Nearby suggestions
       </Typography>
-      <Stack
-        direction="row"
-        spacing={2}
-        className={styles.suggestionListContainer}
-      >
+      <Grid container spacing={4}>
         {data.map((item) => (
-          <Card key={item.id} className={styles.restaurantCard} raised>
-            <CardContent>
-              <Typography variant="h6">{item.name}</Typography>
-              <Typography variant="body2">{item.description}</Typography>
-            </CardContent>
-          </Card>
+          <Grid size={4} item xs={12} sm={6} md={4} key={item.id}>
+            <Card className={styles.restaurantCard} raised>
+              <CardContent>
+                <Typography variant="h6">{item.name}</Typography>
+                <Typography variant="body2">{item.description}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
-      </Stack>
+      </Grid>
     </div>
   );
 }

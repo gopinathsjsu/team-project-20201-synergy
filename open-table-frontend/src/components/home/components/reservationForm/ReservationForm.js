@@ -15,6 +15,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import Typography from "@mui/material/Typography";
 import InputAdornment from "@mui/material/InputAdornment";
 import { fetchRestaurantList } from "./reservationForm.helpers";
+import PlacesAutocomplete from "../PlacesAutocomplete/PlacesAutocomplete";
 import styles from "./reservationForm.module.scss";
 
 const MAX_PERSONS = 20;
@@ -38,7 +39,13 @@ function ReservationForm(props) {
   };
 
   return (
-    <Box p={3}>
+    <Box
+      paddingX={8}
+      paddingY={6}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box display="flex" justifyContent="center" m={3} gap={2}>
           <DatePicker
@@ -59,22 +66,25 @@ function ReservationForm(props) {
           >
             {Array(MAX_PERSONS)
               .fill(0)
-              .map((_, index) => (
-                <MenuItem key={index} value={index + 1}>
-                  {`${index + 1} People`}
-                </MenuItem>
-              ))}
+              .map(
+                (_, index) =>
+                  index !== 0 && (
+                    <MenuItem key={index} value={index + 1}>
+                      {`${index + 1} People`}
+                    </MenuItem>
+                  )
+              )}
           </TextField>
-          <Autocomplete
+          {/* <Autocomplete
             freeSolo
             sx={{ width: 250 }}
             options={[]}
             onChange={
               handleLocationChange
-            } /* onChange triggered when option is selected from dropdown */
+            }
             onInputChange={
               handleLocationChange
-            } /* OnInputChange is triggered for each keyStroke */
+            }
             renderInput={(params) => (
               <TextField
                 label="Choose Location, Restaurant or Cuisine"
@@ -91,7 +101,8 @@ function ReservationForm(props) {
                 {...params}
               />
             )}
-          />
+          /> */}
+          <PlacesAutocomplete />
           <Button variant="contained" endIcon={<SendSharpIcon />}>
             <Typography>Let&apos;s&nbsp;Go</Typography>
           </Button>

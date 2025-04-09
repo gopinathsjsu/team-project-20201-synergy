@@ -20,7 +20,8 @@
     "next": "15.2.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-google-autocomplete": "^2.7.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
