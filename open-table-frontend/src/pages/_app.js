@@ -7,7 +7,7 @@ import "@/styles/globalStyles.scss";
 export default function App({ Component, pageProps }) {
   // const { isLoggedIn } = useAuth()
   return (
-    <AppLayout isLoggedIn>
+    <AppLayout>
       <Component {...pageProps} />
     </AppLayout>
   );

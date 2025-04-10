@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 /* Material UI */
 import AppBar from "@mui/material/AppBar";
@@ -28,9 +28,15 @@ import {
 
 /* Styles */
 import styles from "./appLayout.module.scss";
+import LoginModal from "../loginModal";
 
 function AppLayout({ isLoggedIn, children }) {
+  const [openLoginModal, setOpenLoginModal] = useState(false);
   const { handleRouteChange } = useRouteNavigate();
+
+  const handleLoginModalClose = () => {
+    setOpenLoginModal(false);
+  };
 
   const navItems = useMemo(
     () => (isLoggedIn ? LOGGED_IN_NAV_ITEMS : LOGGED_OUT_NAV_ITEMS),
@@ -40,6 +46,7 @@ function AppLayout({ isLoggedIn, children }) {
   const handleNavClick = (navItemId, path) => {
     if (navItemId === LOGIN.id) {
       // handleLoginClick()
+      setOpenLoginModal(true);
     } else if (navItemId === LOGOUT.id) {
       // handleLogoutClick()
     } else handleRouteChange(path);
@@ -73,6 +80,7 @@ function AppLayout({ isLoggedIn, children }) {
       </AppBar>
       <Divider />
       <Box component="main">{children}</Box>
+      <LoginModal isOpen={openLoginModal} onClose={handleLoginModalClose} />
     </>
   );
 }
