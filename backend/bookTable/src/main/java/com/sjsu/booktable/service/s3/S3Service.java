@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -42,11 +43,18 @@ public class S3Service {
     }
 
     private File convertMultipartFileToFile(MultipartFile file) throws IOException {
+        validateFilename(Objects.requireNonNull(file.getOriginalFilename()));
         File convFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
         try (FileOutputStream fos = new FileOutputStream(convFile)) {
             fos.write(file.getBytes());
         }
         return convFile;
+    }
+
+    private void validateFilename(String filename) {
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            throw new IllegalArgumentException("Invalid filename for image :: " + filename);
+        }
     }
 
 }
