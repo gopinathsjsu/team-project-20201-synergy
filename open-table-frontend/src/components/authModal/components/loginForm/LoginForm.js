@@ -14,13 +14,16 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 
+// Constants
+import { VERIFICATION_TYPE, VERIFICATION_CONFIG } from "./loginForm.constants";
+
 // Helpers
-import { VERIFICATION_TYPE, VERIFICATION_CONFIG } from "./loginModal.constants";
+import { handleOTPSend } from "./loginForm.helpers";
 
 // Styles
-import styles from "./loginModal.module.scss";
+import styles from "./loginForm.module.scss";
 
-function LoginModal({ isOpen, onClose }) {
+function LoginForm({ onClose, onChangeCurrentView }) {
   const [verificationType, setVerificationType] = useState(
     VERIFICATION_TYPE.PHONE
   );
@@ -48,12 +51,18 @@ function LoginModal({ isOpen, onClose }) {
       setValidationError(currentVerificationConfig.emptyInputError);
       setIsContinueDisabled(true);
     } else if (!currentVerificationConfig.validate(verificationInput)) {
+      console.log(verificationInput);
       setValidationError(currentVerificationConfig.validationErrorMessage);
       setIsContinueDisabled(true);
     } else {
       setValidationError("");
       console.log("Submitted phone number:", verificationInput);
       // Proceed with form submission logic
+      handleOTPSend({
+        verificationType,
+        verificationInput,
+        onChangeCurrentView,
+      });
     }
   };
 
@@ -69,18 +78,12 @@ function LoginModal({ isOpen, onClose }) {
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      sx={{
-        "& .MuiDialog-paper": {
-          minHeight: "600px",
-        },
-      }}
-      fullWidth
-      maxWidth="xs"
-    >
-      <DialogTitle textTransform="capitalize" className="flex-between">
+    <>
+      <DialogTitle
+        fontWeight={800}
+        textTransform="capitalize"
+        className="flex-between"
+      >
         {currentVerificationConfig.header}
         <IconButton onClick={onClose}>
           <CloseIcon />
@@ -111,19 +114,24 @@ function LoginModal({ isOpen, onClose }) {
             onClick={handleSubmit}
             size="large"
           >
-            <Typography fontWeight={800} variant="button">
+            <Typography
+              textTransform="none"
+              fontSize={15}
+              fontWeight={800}
+              variant="button"
+            >
               Continue
             </Typography>
           </Button>
           <Button size="small" onClick={handleVerificationTypeToggle}>
-            <Typography color="info" variant="caption">
+            <Typography color="success" variant="caption">
               {currentVerificationConfig.toggleButtonLabel}
             </Typography>
           </Button>
         </div>
       </DialogContent>
-    </Dialog>
+    </>
   );
 }
 
-export default LoginModal;
+export default LoginForm;

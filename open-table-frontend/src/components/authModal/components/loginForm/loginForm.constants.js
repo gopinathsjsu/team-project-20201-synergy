@@ -1,11 +1,11 @@
 import {
   validateEmailFormat,
   validatePhoneNumberFormat,
-} from "./loginModal.helpers";
+} from "./loginForm.helpers";
 
 export const VERIFICATION_TYPE = {
-  EMAIL: "EMAIL",
-  PHONE: "PHONE",
+  EMAIL: "email",
+  PHONE: "phone",
 };
 
 export const VERIFICATION_CONFIG = {

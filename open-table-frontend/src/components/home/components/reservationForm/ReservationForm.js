@@ -38,6 +38,10 @@ function ReservationForm(props) {
     setRestaurantList(newRestaurantList);
   };
 
+  const disablePastDates = (date) => {
+    return date < new Date(new Date().setHours(0, 0, 0, 0));
+  };
+
   return (
     <Box
       paddingX={8}
@@ -52,6 +56,7 @@ function ReservationForm(props) {
             label="Choose Booking Date"
             value={selectedDate}
             onChange={handleDateChange}
+            shouldDisableDate={disablePastDates}
           />
           <TimePicker
             label="Choose Booking Time"

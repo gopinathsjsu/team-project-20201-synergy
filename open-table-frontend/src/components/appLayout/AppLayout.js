@@ -28,7 +28,7 @@ import {
 
 /* Styles */
 import styles from "./appLayout.module.scss";
-import LoginModal from "../loginModal";
+import AuthModal from "@/components/authModal";
 
 function AppLayout({ isLoggedIn, children }) {
   const [openLoginModal, setOpenLoginModal] = useState(false);
@@ -80,7 +80,7 @@ function AppLayout({ isLoggedIn, children }) {
       </AppBar>
       <Divider />
       <Box component="main">{children}</Box>
-      <LoginModal isOpen={openLoginModal} onClose={handleLoginModalClose} />
+      <AuthModal isOpen={openLoginModal} onClose={handleLoginModalClose} />
     </>
   );
 }
