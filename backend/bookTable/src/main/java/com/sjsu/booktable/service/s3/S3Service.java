@@ -44,7 +44,7 @@ public class S3Service {
 
     private File convertMultipartFileToFile(MultipartFile file) throws IOException {
         validateFilename(Objects.requireNonNull(file.getOriginalFilename()));
-        File convFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
+        File convFile = new File(System.getProperty("java.io.tmpdir"), file.getOriginalFilename()).getCanonicalFile();
         try (FileOutputStream fos = new FileOutputStream(convFile)) {
             fos.write(file.getBytes());
         }
@@ -52,7 +52,7 @@ public class S3Service {
     }
 
     private void validateFilename(String filename) {
-        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\") || filename.contains(File.separator)) {
             throw new IllegalArgumentException("Invalid filename for image :: " + filename);
         }
     }
