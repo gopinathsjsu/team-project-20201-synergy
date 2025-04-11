@@ -5,6 +5,7 @@ import com.sjsu.booktable.mappers.RestaurantSearchRowMapper;
 import com.sjsu.booktable.model.dto.restaurant.RestaurantDetailsRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.entity.Restaurant;
+import com.sjsu.booktable.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -87,7 +88,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
         Object[] params;
 
-        if (searchText != null) {
+        if (!StringUtils.isBlank(searchText)) {
             sql.append("AND (name LIKE ? OR description LIKE ? OR cuisine_type LIKE ?) ");
             String likeParam = "%" + searchText.trim() + "%";
             params = new Object[]{longitude, latitude, longitude, latitude, FIXED_RADIUS, likeParam, likeParam, likeParam};
