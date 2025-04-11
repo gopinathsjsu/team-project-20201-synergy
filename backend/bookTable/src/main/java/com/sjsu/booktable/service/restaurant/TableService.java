@@ -9,4 +9,6 @@ public interface TableService {
     void addTables(int restaurantId, List<TableRequest> tables);
 
     void replaceTables(int restaurantId, List<TableRequest> tables);
+
+    int getTotalCapacity(int restaurantId);
 }

@@ -41,4 +41,10 @@ public class TableRepositoryImpl implements TableRepository {
         String sql = "DELETE FROM tables WHERE restaurant_id = ?";
         jdbcTemplate.update(sql, restaurantId);
     }
+
+    @Override
+    public Integer getTotalCapacity(int restaurantId) {
+        String sql = "SELECT COALESCE(SUM(size * quantity), 0) FROM tables WHERE restaurant_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, restaurantId);
+    }
 }

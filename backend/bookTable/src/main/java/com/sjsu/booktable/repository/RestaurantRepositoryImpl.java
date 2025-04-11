@@ -1,7 +1,9 @@
 package com.sjsu.booktable.repository;
 
 import com.sjsu.booktable.mappers.RestaurantRowMapper;
+import com.sjsu.booktable.mappers.RestaurantSearchRowMapper;
 import com.sjsu.booktable.model.dto.restaurant.RestaurantDetailsRequest;
+import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.entity.Restaurant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,12 +13,15 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.List;
 
 @Repository
 public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    private static final int FIXED_RADIUS = 15000; // 15 km
 
     @Override
     public Restaurant findById(int id) {
@@ -69,4 +74,29 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         String sql = "UPDATE restaurants SET main_photo_url = ? WHERE id = ?";
         jdbcTemplate.update(sql, mainPhotoUrl, id);
     }
+
+    @Override
+    public List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText) {
+        // Build the SQL query dynamically.
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
+        sql.append("ST_Distance_Sphere(location, POINT(?, ?)) AS distance ");
+        sql.append("FROM restaurants ");
+        sql.append("WHERE approved = TRUE ");
+        sql.append("AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? ");
+
+        Object[] params;
+
+        if (searchText != null) {
+            sql.append("AND (name LIKE ? OR description LIKE ? OR cuisine_type LIKE ?) ");
+            String likeParam = "%" + searchText.trim() + "%";
+            params = new Object[]{longitude, latitude, longitude, latitude, FIXED_RADIUS, likeParam, likeParam, likeParam};
+        } else {
+            params = new Object[]{longitude, latitude, longitude, latitude, FIXED_RADIUS};
+        }
+
+        sql.append("ORDER BY distance ASC");
+        return jdbcTemplate.query(sql.toString(), new RestaurantSearchRowMapper(), params);
+    }
+
 }

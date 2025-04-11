@@ -9,4 +9,6 @@ public interface RestaurantHoursService {
     void addHours(int restaurantId, List<HoursDto> hours);
 
     void replaceHours(int restaurantId, List<HoursDto> hours);
+
+    HoursDto getHoursForRestaurantAndDay(int restaurantId, int dayOfWeek);
 }

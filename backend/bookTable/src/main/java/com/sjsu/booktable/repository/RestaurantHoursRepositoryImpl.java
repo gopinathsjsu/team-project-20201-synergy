@@ -1,6 +1,8 @@
 package com.sjsu.booktable.repository;
 
+import com.sjsu.booktable.mappers.HoursRowMapper;
 import com.sjsu.booktable.model.dto.restaurant.HoursDto;
+import com.sjsu.booktable.model.entity.RestaurantHours;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -41,5 +43,11 @@ public class RestaurantHoursRepositoryImpl implements RestaurantHoursRepository 
     public void deleteByRestaurantId(int restaurantId) {
         String sql = "DELETE FROM hours WHERE restaurant_id = ?";
         jdbcTemplate.update(sql, restaurantId);
+    }
+
+    @Override
+    public RestaurantHours getHoursByRestaurantAndDay(int restaurantId, int dayOfWeek) {
+        String sql = "SELECT * FROM hours WHERE restaurant_id = ? AND day_of_week = ?";
+        return jdbcTemplate.queryForObject(sql, new HoursRowMapper(), restaurantId, dayOfWeek);
     }
 }
