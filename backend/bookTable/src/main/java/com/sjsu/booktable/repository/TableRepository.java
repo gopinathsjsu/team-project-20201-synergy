@@ -9,4 +9,6 @@ public interface TableRepository {
     void insertTables(int restaurantId, List<TableRequest> tableRequests);
 
     void deleteByRestaurantId(int restaurantId);
+
+    Integer getTotalCapacity(int restaurantId);
 }

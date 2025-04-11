@@ -1,6 +1,7 @@
 package com.sjsu.booktable.service.restaurant;
 
 import com.sjsu.booktable.model.dto.restaurant.HoursDto;
+import com.sjsu.booktable.model.entity.RestaurantHours;
 import com.sjsu.booktable.repository.RestaurantHoursRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,5 +25,15 @@ public class RestaurantHoursServiceImpl implements RestaurantHoursService {
     public void replaceHours(int restaurantId, List<HoursDto> hours) {
         restaurantHoursRepository.deleteByRestaurantId(restaurantId);
         restaurantHoursRepository.insertHours(restaurantId, hours);
+    }
+
+    @Override
+    public HoursDto getHoursForRestaurantAndDay(int restaurantId, int dayOfWeek) {
+        RestaurantHours hours = restaurantHoursRepository.getHoursByRestaurantAndDay(restaurantId, dayOfWeek);
+        HoursDto hoursDto = new HoursDto();
+        hoursDto.setDayOfWeek(hours.getDayOfWeek());
+        hoursDto.setOpenTime(hours.getOpenTime().toLocalTime());
+        hoursDto.setCloseTime(hours.getCloseTime().toLocalTime());
+        return hoursDto;
     }
 }

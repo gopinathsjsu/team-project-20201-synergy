@@ -25,4 +25,10 @@ public class TableServiceImpl implements TableService {
         tableRepository.deleteByRestaurantId(restaurantId);
         tableRepository.insertTables(restaurantId, tables);
     }
+
+    @Override
+    public int getTotalCapacity(int restaurantId) {
+        Integer capacity = tableRepository.getTotalCapacity(restaurantId);
+        return capacity != null ? capacity : 0;
+    }
 }

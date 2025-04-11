@@ -35,4 +35,10 @@ public class TimeSlotRepositoryImpl implements TimeSlotRepository {
         String sql = "DELETE FROM time_slots WHERE restaurant_id = ?";
         jdbcTemplate.update(sql, restaurantId);
     }
+
+    @Override
+    public List<LocalTime> getTimeSlotsByRestaurantAndDay(int restaurantId, int dayOfWeek) {
+        String sql = "SELECT slot_time FROM time_slots WHERE restaurant_id = ? AND day_of_week = ? ORDER BY slot_time ";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getTime("slot_time").toLocalTime(), restaurantId, dayOfWeek);
+    }
 }
