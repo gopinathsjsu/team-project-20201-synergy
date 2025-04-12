@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public class RestaurantRepositoryImpl implements RestaurantRepository {
@@ -22,6 +24,43 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     public Restaurant findById(int id) {
         String sql = "SELECT * FROM restaurants WHERE id = ?";
         return this.jdbcTemplate.queryForObject(sql, new RestaurantRowMapper(), id);
+    }
+
+    @Override
+    public List<Restaurant> findByApproved(boolean approved) {
+        String sql = "SELECT * FROM restaurants WHERE approved = ?";
+        return this.jdbcTemplate.query(sql, new RestaurantRowMapper(), approved);
+    }
+
+    @Override
+    public void updateRestaurant(Restaurant restaurant) {
+        String sql = "UPDATE restaurants SET approved = ? WHERE id = ?";
+        jdbcTemplate.update(sql, restaurant.isApproved(), restaurant.getId());
+    }
+
+    @Override
+    public void deleteById(int id) {
+        String sql = "DELETE FROM restaurants WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public List<Restaurant> getMostPopularRestaurants(LocalDateTime startDate, LocalDateTime endDate) {
+        String sql = """
+            SELECT r.* FROM restaurants r 
+            JOIN bookings b ON r.id = b.restaurant_id 
+            WHERE b.booking_time BETWEEN ? AND ? 
+            GROUP BY r.id 
+            ORDER BY COUNT(b.id) DESC 
+            LIMIT 10
+            """;
+        return jdbcTemplate.query(sql, new RestaurantRowMapper(), startDate, endDate);
+    }
+
+    @Override
+    public int getTotalReservations(LocalDateTime startDate, LocalDateTime endDate) {
+        String sql = "SELECT COUNT(*) FROM bookings WHERE booking_time BETWEEN ? AND ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, startDate, endDate);
     }
 
     @Override
@@ -70,3 +109,5 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         jdbcTemplate.update(sql, mainPhotoUrl, id);
     }
 }
+
+
