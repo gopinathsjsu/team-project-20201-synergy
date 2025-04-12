@@ -41,13 +41,15 @@ jacocoTestReport {
 	afterEvaluate {
 		classDirectories.setFrom(files(classDirectories.files.collect {
 			fileTree(dir: it, exclude: [
-				'com/sjsu/booktable/dto/**',
-				'com/sjsu/booktable/exception/**',
-				'com/sjsu/booktable/controller/**',
-				'com/sjsu/booktable/config/**',
-				'com/sjsu/booktable/model/**',
-				'com/sjsu/booktable/BookTableLauncher.java',
-				'com/sjsu/booktable/utils/**'
+					'com/sjsu/booktable/dto/**',
+					'com/sjsu/booktable/exception/**',
+					'com/sjsu/booktable/controller/**',
+					'com/sjsu/booktable/config/**',
+					'com/sjsu/booktable/model/**',
+					'com/sjsu/booktable/BookTableLauncher.java',
+					'com/sjsu/booktable/utils/**',
+					'com/sjsu/booktable/repository/**',
+					'com/sjsu/booktable/mappers/**',
 			])
 		}))
 	}
@@ -97,7 +99,7 @@ jacocoTestCoverageVerification {
 	violationRules {
 		rule {
 			limit {
-				minimum = 0.1  // Require 70% coverage
+				minimum = 0.7  // Require 70% coverage
 			}
 		}
 	}
@@ -110,7 +112,9 @@ jacocoTestCoverageVerification {
 				'com/sjsu/booktable/config/**',
 				'com/sjsu/booktable/model/**',
 				'com/sjsu/booktable/BookTableLauncher.java',
-				'com/sjsu/booktable/utils/**'
+				'com/sjsu/booktable/utils/**',
+				'com/sjsu/booktable/repository/**',
+				'com/sjsu/booktable/mappers/**',
 			])
 		}))
 	}
