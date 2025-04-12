@@ -9,4 +9,6 @@ public interface TimeSlotService {
     void addTimeSlots(int restaurantId, List<TimeSlotDto> slots);
 
     void replaceTimeSlots(int restaurantId, List<TimeSlotDto> slots);
+
+    TimeSlotDto getTimeSlotsForRestaurantAndDay(int restaurantId, int dayOfWeek);
 }

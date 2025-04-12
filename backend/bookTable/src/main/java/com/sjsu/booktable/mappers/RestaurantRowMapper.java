@@ -39,6 +39,7 @@ public class RestaurantRowMapper implements RowMapper<Restaurant> {
                 .updatedAt(rs.getTimestamp("updated_at"))
                 .approved(rs.getBoolean("approved"))
                 .managerId(rs.getInt("manager_id"))
+                .deleted(rs.getBoolean("deleted"))
                 .build();
     }
 }
