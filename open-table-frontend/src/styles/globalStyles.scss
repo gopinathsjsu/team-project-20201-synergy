@@ -1,0 +1,77 @@
+/* Global Flexbox Utilities */
+
+/* Mixin for Flexbox */
+@mixin flex(
+  $direction: row,
+  $justify: flex-start,
+  $align: stretch,
+  $wrap: nowrap
+) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  flex-wrap: $wrap;
+}
+
+/* Basic Flex Container */
+.flex {
+  @include flex();
+}
+
+/* Alignments */
+.flex-center {
+  @include flex(row, center, center);
+}
+
+.flex-start {
+  @include flex(row, flex-start, center);
+}
+
+.flex-end {
+  @include flex(row, flex-end, center);
+}
+
+/* Directions */
+.flex-row {
+  flex-direction: row;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+/* Space Distribution */
+.flex-between {
+  @include flex(row, space-between, center);
+}
+
+.flex-around {
+  @include flex(row, space-around, center);
+}
+
+.flex-evenly {
+  @include flex(row, space-evenly, center);
+}
+
+/* Wrapping */
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+/* Grow & Shrink */
+.flex-grow {
+  flex-grow: 1;
+}
+
+.flex-shrink {
+  flex-shrink: 1;
+}
+
+.g-8 {
+  gap: 0.5rem;
+}
