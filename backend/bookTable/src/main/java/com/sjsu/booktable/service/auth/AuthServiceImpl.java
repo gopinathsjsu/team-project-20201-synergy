@@ -4,14 +4,12 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
 import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.auth.LogoutFailedException;
-import com.sjsu.booktable.model.dto.SendOTPRequest;
-import com.sjsu.booktable.model.dto.SendOTPResponse;
-import com.sjsu.booktable.model.dto.VerifyOTPRequest;
-import com.sjsu.booktable.model.dto.VerifyOTPResponse;
+import com.sjsu.booktable.model.dto.*;
 import com.sjsu.booktable.model.enums.OTPIdentifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -46,6 +44,19 @@ public class AuthServiceImpl implements AuthService {
         OTPIdentifier type = OTPIdentifier.fromValue(request.getIdentifier());
         OTPStrategy strategy = otpStrategies.get(type);
         return strategy.verifyOtp(request);
+    }
+
+    @Override
+    public AuthStatusResponse getLoginStatus(Authentication authentication) {
+        if(authentication != null && authentication.isAuthenticated()) {
+            AuthStatusResponse authStatusResponse = new AuthStatusResponse();
+            authStatusResponse.setLoggedIn(true);
+            return authStatusResponse;
+        } else {
+            AuthStatusResponse authStatusResponse = new AuthStatusResponse();
+            authStatusResponse.setLoggedIn(false);
+            return authStatusResponse;
+        }
     }
 
     @Override
