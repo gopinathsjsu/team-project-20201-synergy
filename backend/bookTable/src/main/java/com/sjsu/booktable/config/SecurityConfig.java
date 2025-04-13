@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .bearerTokenResolver(request -> {
                             // Skip token resolution for public endpoints
                             String path = request.getServletPath();
-                            if (path.startsWith("/api/auth/")) {
+                            if (path.startsWith("/api/auth/otp")) {
                                 return null;
                             }
                             // Extract token from cookie for protected endpoints

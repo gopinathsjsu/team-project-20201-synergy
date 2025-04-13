@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,6 +41,11 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(BTResponse.success(verifyResponse));
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity getLoginStatus(Authentication authentication) {
+        return ResponseEntity.ok(BTResponse.success(authService.getLoginStatus(authentication)));
     }
 
     @PostMapping("/logout")
