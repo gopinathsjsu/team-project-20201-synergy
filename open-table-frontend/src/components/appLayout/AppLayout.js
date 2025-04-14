@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 
 /* Material UI */
 import AppBar from "@mui/material/AppBar";
@@ -29,10 +29,13 @@ import {
 /* Styles */
 import styles from "./appLayout.module.scss";
 import AuthModal from "@/components/authModal";
+import { AuthContext } from "@/AuthContext/AuthContext";
 
-function AppLayout({ isLoggedIn, children }) {
+function AppLayout({ children }) {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const { handleRouteChange } = useRouteNavigate();
+
+  const { isLoggedIn } = useContext(AuthContext);
 
   const handleLoginModalClose = () => {
     setOpenLoginModal(false);
