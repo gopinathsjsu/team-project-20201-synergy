@@ -3,7 +3,6 @@
 # Project Title
 SYNERGY
 ## Team Members
-- Sofia Silva 
 - Rajeev Ranjan Chaurasia
 - Tushar Singh
 - Jeevan Kurian
