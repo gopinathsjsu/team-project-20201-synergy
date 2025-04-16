@@ -20,7 +20,7 @@ import java.util.Map;
 public class AdminController - Class declaration*/
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('Admin')")
 public class AdminController {
 
     /* Spring's dependency injection annotation. It automatically provides an instance of AdminService */
