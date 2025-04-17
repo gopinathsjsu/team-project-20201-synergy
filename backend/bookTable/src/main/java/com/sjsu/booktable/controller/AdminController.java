@@ -3,7 +3,10 @@ package com.sjsu.booktable.controller;
 /*RestaurantResponse - Data Transfer Object for restaurant data
 Restaurant - Entity class representing a restaurant in the database
 AdminService - Interface defining admin operations*/
+<<<<<<< HEAD
 import com.sjsu.booktable.model.dto.BTResponse;
+=======
+>>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
 import com.sjsu.booktable.model.dto.restaurant.RestaurantResponse;
 import com.sjsu.booktable.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +24,11 @@ import java.util.Map;
 public class AdminController - Class declaration*/
 @RestController
 @RequestMapping("/api/admin")
+<<<<<<< HEAD
 @PreAuthorize("hasAuthority('Admin')")
+=======
+@PreAuthorize("hasRole('ADMIN')")
+>>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
 public class AdminController {
 
     /* Spring's dependency injection annotation. It automatically provides an instance of AdminService */
@@ -30,16 +37,29 @@ public class AdminController {
 /*@GetMapping - Maps HTTP GET requests to this method
 "/restaurants/pending" - The endpoint path (full path will be /api/admin/restaurants/pending)
 ResponseEntity<List<RestaurantDto>> - Return type that includes HTTP status and body
+<<<<<<< HEAD
 ResponseEntity.ok() - Wraps the result in a 200 OK response */
     @GetMapping("/restaurants/pending")
     public ResponseEntity getPendingRestaurants() {
         return ResponseEntity.ok(BTResponse.success(adminService.getPendingRestaurants()));
+=======
+adminService.getPendingRestaurants() - Calls service method to get pending restaurants
+ResponseEntity.ok() - Wraps the result in a 200 OK response */
+    @GetMapping("/restaurants/pending")
+    public ResponseEntity<List<RestaurantResponse>> getPendingRestaurants() {
+        return ResponseEntity.ok(adminService.getPendingRestaurants());
+>>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
     }
     
 /*You use @PathVariable to bind it to a method parameter */
     @PostMapping("/restaurants/{restaurantId}/approve")
+<<<<<<< HEAD
     public ResponseEntity approveRestaurant(@PathVariable String restaurantId) {
         return ResponseEntity.ok(BTResponse.success(adminService.approveRestaurant(restaurantId)));
+=======
+    public ResponseEntity<RestaurantResponse> approveRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(adminService.approveRestaurant(restaurantId));
+>>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
     }
 
     /*Let's break down ResponseEntity.ok().build():
@@ -50,6 +70,7 @@ DELETE operations (when you just want to confirm deletion)
 POST operations that don't need to return data
 PUT operations that just confirm success */
     @DeleteMapping("/restaurants/{restaurantId}")
+<<<<<<< HEAD
     public ResponseEntity removeRestaurant(@PathVariable String restaurantId) {
         adminService.removeRestaurant(restaurantId);
         return ResponseEntity.ok(BTResponse.success(null));
@@ -58,5 +79,15 @@ PUT operations that just confirm success */
     @GetMapping("/analytics/reservations")
     public ResponseEntity getReservationAnalytics() {
         return ResponseEntity.ok(BTResponse.success(adminService.getReservationAnalytics()));
+=======
+    public ResponseEntity<Void> removeRestaurant(@PathVariable String restaurantId) {
+        adminService.removeRestaurant(restaurantId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/analytics/reservations")
+    public ResponseEntity<Map<String, Object>> getReservationAnalytics() {
+        return ResponseEntity.ok(adminService.getReservationAnalytics());
+>>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
     }
 } 

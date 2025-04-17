@@ -5,8 +5,11 @@ import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.entity.Restaurant;
 import java.time.LocalDateTime;
 import java.util.List;
+<<<<<<< HEAD
 
 import java.util.List;
+=======
+>>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
 
 public interface RestaurantRepository {
 
