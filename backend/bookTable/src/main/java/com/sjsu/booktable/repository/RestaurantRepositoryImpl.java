@@ -45,8 +45,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public void deleteById(int id) {
-        String sql = "DELETE FROM restaurants WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+        String sql = "UPDATE restaurants SET deleted = ? WHERE id = ?";
+        jdbcTemplate.update(sql, true, id);
     }
 
     @Override
@@ -54,7 +54,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         String sql = """
             SELECT r.* FROM restaurants r 
             JOIN bookings b ON r.id = b.restaurant_id 
-            WHERE b.booking_time BETWEEN ? AND ? 
+            WHERE b.booking_time BETWEEN ? AND ?
+            AND r.deleted = false
             GROUP BY r.id 
             ORDER BY COUNT(b.id) DESC 
             LIMIT 10
@@ -70,8 +71,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public int addRestaurantDetails(RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl, int managerId) {
-        String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?)";
+        String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id, deleted)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, false)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -121,7 +122,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
         sql.append("ST_Distance_Sphere(location, POINT(?, ?)) AS distance ");
         sql.append("FROM restaurants ");
-        sql.append("WHERE approved = TRUE ");
+        sql.append("WHERE approved = true ");
+        sql.append("AND deleted = false ");
         sql.append("AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? ");
 
         Object[] params;

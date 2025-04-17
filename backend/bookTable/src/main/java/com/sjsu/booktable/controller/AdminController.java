@@ -3,6 +3,7 @@ package com.sjsu.booktable.controller;
 /*RestaurantResponse - Data Transfer Object for restaurant data
 Restaurant - Entity class representing a restaurant in the database
 AdminService - Interface defining admin operations*/
+import com.sjsu.booktable.model.dto.BTResponse;
 import com.sjsu.booktable.model.dto.restaurant.RestaurantResponse;
 import com.sjsu.booktable.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +30,16 @@ public class AdminController {
 /*@GetMapping - Maps HTTP GET requests to this method
 "/restaurants/pending" - The endpoint path (full path will be /api/admin/restaurants/pending)
 ResponseEntity<List<RestaurantDto>> - Return type that includes HTTP status and body
-adminService.getPendingRestaurants() - Calls service method to get pending restaurants
 ResponseEntity.ok() - Wraps the result in a 200 OK response */
     @GetMapping("/restaurants/pending")
-    public ResponseEntity<List<RestaurantResponse>> getPendingRestaurants() {
-        return ResponseEntity.ok(adminService.getPendingRestaurants());
+    public ResponseEntity getPendingRestaurants() {
+        return ResponseEntity.ok(BTResponse.success(adminService.getPendingRestaurants()));
     }
     
 /*You use @PathVariable to bind it to a method parameter */
     @PostMapping("/restaurants/{restaurantId}/approve")
-    public ResponseEntity<RestaurantResponse> approveRestaurant(@PathVariable String restaurantId) {
-        return ResponseEntity.ok(adminService.approveRestaurant(restaurantId));
+    public ResponseEntity approveRestaurant(@PathVariable String restaurantId) {
+        return ResponseEntity.ok(BTResponse.success(adminService.approveRestaurant(restaurantId)));
     }
 
     /*Let's break down ResponseEntity.ok().build():
@@ -50,13 +50,13 @@ DELETE operations (when you just want to confirm deletion)
 POST operations that don't need to return data
 PUT operations that just confirm success */
     @DeleteMapping("/restaurants/{restaurantId}")
-    public ResponseEntity<Void> removeRestaurant(@PathVariable String restaurantId) {
+    public ResponseEntity removeRestaurant(@PathVariable String restaurantId) {
         adminService.removeRestaurant(restaurantId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(BTResponse.success(null));
     }
 
     @GetMapping("/analytics/reservations")
-    public ResponseEntity<Map<String, Object>> getReservationAnalytics() {
-        return ResponseEntity.ok(adminService.getReservationAnalytics());
+    public ResponseEntity getReservationAnalytics() {
+        return ResponseEntity.ok(BTResponse.success(adminService.getReservationAnalytics()));
     }
 } 
