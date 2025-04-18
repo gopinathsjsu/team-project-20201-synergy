@@ -1,13 +1,14 @@
 package com.sjsu.booktable.service.restaurant;
 
 import com.sjsu.booktable.model.entity.Photo;
-import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 public interface PhotoService {
 
     void addPhoto(Photo photo);
 
-    String uploadPhotoInS3(MultipartFile mainPhoto, String folder);
+    List<Photo> getPhotosByRestaurantId(int restaurantId);
 
-    String movePhotoToDifferentPath(String sourcePath, String destPath);
+    void deletePhotoByRestaurantIdAndS3Url(int restaurantId, List<String> s3Urls);
+
 }

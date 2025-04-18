@@ -4,6 +4,7 @@ import com.sjsu.booktable.exception.restaurant.RestaurantException;
 import com.sjsu.booktable.model.dto.restaurant.HoursDto;
 import com.sjsu.booktable.model.entity.RestaurantHours;
 import com.sjsu.booktable.repository.RestaurantHoursRepository;
+import com.sjsu.booktable.utils.ListUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,5 +41,17 @@ public class RestaurantHoursServiceImpl implements RestaurantHoursService {
         hoursDto.setOpenTime(hours.getOpenTime().toLocalTime());
         hoursDto.setCloseTime(hours.getCloseTime().toLocalTime());
         return hoursDto;
+    }
+
+    @Override
+    public List<HoursDto> getHoursForRestaurant(int restaurantId) {
+        List<RestaurantHours> hoursList = ListUtils.nullSafeList(restaurantHoursRepository.getHoursByRestaurantId(restaurantId));
+        return hoursList.stream().map(hours -> {
+            HoursDto hoursDto = new HoursDto();
+            hoursDto.setDayOfWeek(hours.getDayOfWeek());
+            hoursDto.setOpenTime(hours.getOpenTime().toLocalTime());
+            hoursDto.setCloseTime(hours.getCloseTime().toLocalTime());
+            return hoursDto;
+        }).toList();
     }
 }

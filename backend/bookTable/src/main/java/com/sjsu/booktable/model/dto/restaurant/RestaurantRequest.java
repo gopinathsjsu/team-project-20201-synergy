@@ -1,10 +1,10 @@
 package com.sjsu.booktable.model.dto.restaurant;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class RestaurantRequest {
 
     @NotEmpty
     @Valid
-    private List<TableRequest> tableConfigurations;
+    private List<TableConfigurationDto> tableConfigurations;
 
     @NotEmpty
     @Valid
@@ -27,8 +27,8 @@ public class RestaurantRequest {
     @Valid
     private List<TimeSlotDto> timeSlots;
 
-    @NotNull
-    private MultipartFile mainPhoto; // Main photo file upload
+    @NotBlank
+    private String mainPhotoUrl;
 
-    private List<MultipartFile> additionalPhotos; // Optional additional photos
+    private List<String> additionalPhotoUrls; // optional
 }

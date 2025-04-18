@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.sjsu.booktable.utils.SQLUtils.buildPlaceholders;
+
 @Repository
 public class BookingRepositoryImpl implements BookingRepository {
 
@@ -19,14 +21,8 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public Map<LocalTime, Integer> getBookedCapacityForTimeSlotsForRestaurant(int restaurantId, LocalDate reservationDate, List<LocalTime> timeSlots) {
-        // Build placeholders for the IN clause (e.g., "?, ?, ?")
-        String placeholders = timeSlots.stream()
-                .map(slot -> "?")
-                .reduce((a, b) -> a + ", " + b)
-                .orElse("");
-
         String sql = "SELECT booking_time, SUM(party_size) AS total FROM bookings WHERE restaurant_id = ? AND booking_date = ? AND status = 'confirmed' " +
-                "AND booking_time IN (" + placeholders + ") GROUP BY booking_time";
+                "AND booking_time IN (" + buildPlaceholders(timeSlots) + ") GROUP BY booking_time";
 
         // Build parameter array: first restaurantId and reservationDate, then each candidate slot as java.sql.Time.
         Object[] params = new Object[2 + timeSlots.size()];

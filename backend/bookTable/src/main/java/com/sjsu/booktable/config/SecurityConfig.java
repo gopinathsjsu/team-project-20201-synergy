@@ -3,6 +3,7 @@ package com.sjsu.booktable.config;
 import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
@@ -26,6 +27,8 @@ public class SecurityConfig {
         http.csrf(CsrfConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Allow OPTIONS requests for CORS preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         // Protected endpoints
@@ -40,7 +43,7 @@ public class SecurityConfig {
                         .bearerTokenResolver(request -> {
                             // Skip token resolution for public endpoints
                             String path = request.getServletPath();
-                            if (path.startsWith("/api/auth/otp")) {
+                            if (path.startsWith("/api/auth/otp") || "OPTIONS".equals(request.getMethod())) {
                                 return null;
                             }
                             // Extract token from cookie for protected endpoints

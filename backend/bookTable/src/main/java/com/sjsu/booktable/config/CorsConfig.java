@@ -17,8 +17,16 @@ public class CorsConfig {
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:3000", "http://localhost:8080") // Replace with your Next.js URL
-                        .allowedMethods(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name())
-                        .allowCredentials(true); // Required for cookies
+                        .allowedMethods(
+                                HttpMethod.GET.name(),
+                                HttpMethod.POST.name(),
+                                HttpMethod.PUT.name(),
+                                HttpMethod.DELETE.name(),
+                                HttpMethod.OPTIONS.name())
+                        .allowedHeaders("Authorization", "Content-Type", "Accept", "Cookie") // Allow specific headers
+                        .exposedHeaders("Authorization") // If needed for response headers
+                        .allowCredentials(true) // Allow cookies
+                        .maxAge(3600); // Cache preflight response for 1 hour
             }
         };
     }

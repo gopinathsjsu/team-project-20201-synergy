@@ -1,6 +1,8 @@
 package com.sjsu.booktable.repository;
 
-import com.sjsu.booktable.model.dto.restaurant.TableRequest;
+import com.sjsu.booktable.mappers.TableRowMapper;
+import com.sjsu.booktable.model.dto.restaurant.TableConfigurationDto;
+import com.sjsu.booktable.model.entity.TableEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,13 +19,13 @@ public class TableRepositoryImpl implements TableRepository {
     private JdbcTemplate jdbcTemplate;
 
     @Override
-    public void insertTables(int restaurantId, List<TableRequest> tableRequests) {
+    public void insertTables(int restaurantId, List<TableConfigurationDto> tableConfigurationDtos) {
         String sql = "INSERT INTO tables (restaurant_id, size, quantity) VALUES (?, ?, ?)";
 
         this.jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                TableRequest tr = tableRequests.get(i);
+                TableConfigurationDto tr = tableConfigurationDtos.get(i);
                 ps.setInt(1, restaurantId);
                 ps.setInt(2, tr.getSize());
                 ps.setInt(3, tr.getQuantity());
@@ -31,7 +33,7 @@ public class TableRepositoryImpl implements TableRepository {
 
             @Override
             public int getBatchSize() {
-                return tableRequests.size();
+                return tableConfigurationDtos.size();
             }
         });
     }
@@ -46,5 +48,11 @@ public class TableRepositoryImpl implements TableRepository {
     public Integer getTotalCapacity(int restaurantId) {
         String sql = "SELECT COALESCE(SUM(size * quantity), 0) FROM tables WHERE restaurant_id = ?";
         return jdbcTemplate.queryForObject(sql, Integer.class, restaurantId);
+    }
+
+    @Override
+    public List<TableEntity> getTableConfigurationsForRestaurant(int restaurantId) {
+        String sql = "SELECT * FROM tables WHERE restaurant_id = ?";
+        return jdbcTemplate.query(sql, new TableRowMapper(), restaurantId);
     }
 }

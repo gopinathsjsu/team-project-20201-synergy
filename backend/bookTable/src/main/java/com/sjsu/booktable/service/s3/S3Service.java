@@ -1,18 +1,18 @@
 package com.sjsu.booktable.service.s3;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.CollectionUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.Date;
+import java.util.List;
+import java.net.URL;
 
 @Service
 @RequiredArgsConstructor
@@ -24,37 +24,52 @@ public class S3Service {
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    public String uploadFile(MultipartFile file, String folder) throws IOException {
-        String fileName = folder + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
-        File tempFile = convertMultipartFileToFile(file);
-        s3Client.putObject(bucketName, fileName, tempFile);
-        tempFile.delete();
-        return s3Client.getUrl(bucketName, fileName).toString();
+    public URL generatePresignedUrl(String folder, String fileName, int expirationInMinutes) {
+        String key = folder + "/" + fileName;
+        Date expiration = new Date();
+        long expTimeMillis = expiration.getTime() + ((long) expirationInMinutes * 60 * 1000);
+        expiration.setTime(expTimeMillis);
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName, key)
+                .withMethod(HttpMethod.PUT)
+                .withExpiration(expiration);
+        URL url = s3Client.generatePresignedUrl(request);
+        log.info("Generated pre-signed URL for key {}: {}", key, url.toString());
+        return url;
     }
 
-    public void moveFile(String sourceKey, String destKey) {
-        CopyObjectRequest copyRequest = new CopyObjectRequest(bucketName, sourceKey, bucketName, destKey);
-        s3Client.copyObject(copyRequest);
-        s3Client.deleteObject(bucketName, sourceKey);
-    }
-
-    public String getFileUrl(String key) {
-        return s3Client.getUrl(bucketName, key).toString();
-    }
-
-    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
-        validateFilename(Objects.requireNonNull(file.getOriginalFilename()));
-        File convFile = new File(System.getProperty("java.io.tmpdir"), file.getOriginalFilename()).getCanonicalFile();
-        try (FileOutputStream fos = new FileOutputStream(convFile)) {
-            fos.write(file.getBytes());
+    public URL generatePresignedGetUrl(String key, int expirationInMinutes) {
+        try {
+            Date expiration = new Date();
+            long expTimeMillis = expiration.getTime() + ((long) expirationInMinutes * 60 * 1000);
+            expiration.setTime(expTimeMillis);
+            GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName, key)
+                    .withMethod(HttpMethod.GET)
+                    .withExpiration(expiration);
+            URL url = s3Client.generatePresignedUrl(request);
+            log.info("Generated pre-signed GET URL for key {}: {}", key, url.toString());
+            return url;
+        } catch (Exception e) {
+            log.error("Error generating pre-signed GET URL for {} : {}", key, e.getMessage());
+            return null;
         }
-        return convFile;
     }
 
-    private void validateFilename(String filename) {
-        if (filename.contains("..") || filename.contains("/") || filename.contains("\\") || filename.contains(File.separator)) {
-            throw new IllegalArgumentException("Invalid filename for image :: " + filename);
+    /**
+     * Deletes multiple files from S3 in one call.
+     *
+     * @param keys List of S3 object keys to delete.
+     */
+    public void deleteFilesBulk(List<String> keys) {
+        if(CollectionUtils.isEmpty(keys)) {
+            log.warn("No keys provided for bulk deletion.");
+            return;
         }
+
+        List<DeleteObjectsRequest.KeyVersion> keyVersions = keys.stream().map(DeleteObjectsRequest.KeyVersion::new).toList();
+        DeleteObjectsRequest delReq = new DeleteObjectsRequest(bucketName)
+                .withKeys(keyVersions);
+        s3Client.deleteObjects(delReq);
+        log.info("Bulk deleted keys: {}", keys);
     }
 
 }

@@ -15,6 +15,6 @@ public class HoursDto {
     @NotNull
     private LocalTime openTime;  // Format: "HH:mm:ss", e.g. "11:00:00"
 
-   @NotNull
+    @NotNull
     private LocalTime closeTime; // Format: "HH:mm:ss", e.g. "22:00:00"
 }

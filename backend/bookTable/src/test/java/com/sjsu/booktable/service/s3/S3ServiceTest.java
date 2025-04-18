@@ -1,25 +1,26 @@
 package com.sjsu.booktable.service.s3;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +36,7 @@ class S3ServiceTest {
     private static final String FOLDER = "test-folder";
     private static final String FILE_NAME = "test.jpg";
     private static final String FILE_URL = "https://test-bucket.s3.amazonaws.com/test-folder/test.jpg";
+    private static final int EXPIRATION_MINUTES = 5;
 
     @BeforeEach
     void setUp() {
@@ -43,70 +45,103 @@ class S3ServiceTest {
     }
 
     @Test
-    void uploadFile_Success() throws IOException {
+    void generatePresignedUrl_Success() throws Exception {
         // Arrange
-        MultipartFile file = new MockMultipartFile(
-                "file",
-                FILE_NAME,
-                "image/jpeg",
-                "test content".getBytes()
-        );
-        String expectedKey = FOLDER + "/" + FILE_NAME;
-        when(s3Client.getUrl(eq(BUCKET_NAME), anyString())).thenReturn(new URL(FILE_URL));
+        URL expectedUrl = new URL(FILE_URL);
+        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class)))
+                .thenReturn(expectedUrl);
 
         // Act
-        String result = s3Service.uploadFile(file, FOLDER);
+        URL result = s3Service.generatePresignedUrl(FOLDER, FILE_NAME, EXPIRATION_MINUTES);
 
         // Assert
         assertNotNull(result);
-        assertEquals(FILE_URL, result);
-        verify(s3Client).putObject(eq(BUCKET_NAME), anyString(), any(File.class));
+        assertEquals(expectedUrl, result);
+        
+        ArgumentCaptor<GeneratePresignedUrlRequest> requestCaptor = ArgumentCaptor.forClass(GeneratePresignedUrlRequest.class);
+        verify(s3Client).generatePresignedUrl(requestCaptor.capture());
+        
+        GeneratePresignedUrlRequest capturedRequest = requestCaptor.getValue();
+        assertEquals(BUCKET_NAME, capturedRequest.getBucketName());
+        assertEquals(FOLDER + "/" + FILE_NAME, capturedRequest.getKey());
+        assertEquals(HttpMethod.PUT, capturedRequest.getMethod());
+        assertTrue(capturedRequest.getExpiration().after(new Date()));
     }
 
     @Test
-    void uploadFile_InvalidFilename() {
+    void generatePresignedGetUrl_Success() throws Exception {
         // Arrange
-        MultipartFile file = new MockMultipartFile(
-                "file",
-                "../test.jpg",
-                "image/jpeg",
-                "test content".getBytes()
-        );
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> s3Service.uploadFile(file, FOLDER));
-        verify(s3Client, never()).putObject(eq(BUCKET_NAME), anyString(), any(File.class));
-    }
-
-    @Test
-    void moveFile_Success() {
-        // Arrange
-        String sourceKey = "source/key";
-        String destKey = "dest/key";
+        String key = FOLDER + "/" + FILE_NAME;
+        URL expectedUrl = new URL(FILE_URL);
+        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class)))
+                .thenReturn(expectedUrl);
 
         // Act
-        s3Service.moveFile(sourceKey, destKey);
-
-        // Assert
-        verify(s3Client).copyObject(any(CopyObjectRequest.class));
-        verify(s3Client).deleteObject(BUCKET_NAME, sourceKey);
-    }
-
-    @Test
-    void getFileUrl_Success() {
-        // Arrange
-        String key = "test/key";
-        try {
-            when(s3Client.getUrl(eq(BUCKET_NAME), eq(key))).thenReturn(new URL(FILE_URL));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Invalid URL format: " + FILE_URL, e);
-        }
-
-        // Act
-        String result = s3Service.getFileUrl(key);
+        URL result = s3Service.generatePresignedGetUrl(key, EXPIRATION_MINUTES);
 
         // Assert
         assertNotNull(result);
-        assertEquals(FILE_URL, result);
+        assertEquals(expectedUrl, result);
+        
+        ArgumentCaptor<GeneratePresignedUrlRequest> requestCaptor = ArgumentCaptor.forClass(GeneratePresignedUrlRequest.class);
+        verify(s3Client).generatePresignedUrl(requestCaptor.capture());
+        
+        GeneratePresignedUrlRequest capturedRequest = requestCaptor.getValue();
+        assertEquals(BUCKET_NAME, capturedRequest.getBucketName());
+        assertEquals(key, capturedRequest.getKey());
+        assertEquals(HttpMethod.GET, capturedRequest.getMethod());
+        assertTrue(capturedRequest.getExpiration().after(new Date()));
+    }
+
+    @Test
+    void generatePresignedGetUrl_Error() {
+        // Arrange
+        String key = FOLDER + "/" + FILE_NAME;
+        when(s3Client.generatePresignedUrl(any(GeneratePresignedUrlRequest.class)))
+                .thenThrow(new RuntimeException("S3 Error"));
+
+        // Act
+        URL result = s3Service.generatePresignedGetUrl(key, EXPIRATION_MINUTES);
+
+        // Assert
+        assertNull(result);
+    }
+
+    @Test
+    void deleteFilesBulk_Success() {
+        // Arrange
+        List<String> keys = Arrays.asList("key1", "key2", "key3");
+
+        // Act
+        s3Service.deleteFilesBulk(keys);
+
+        // Assert
+        ArgumentCaptor<DeleteObjectsRequest> requestCaptor = ArgumentCaptor.forClass(DeleteObjectsRequest.class);
+        verify(s3Client).deleteObjects(requestCaptor.capture());
+        
+        DeleteObjectsRequest capturedRequest = requestCaptor.getValue();
+        assertEquals(BUCKET_NAME, capturedRequest.getBucketName());
+        assertEquals(3, capturedRequest.getKeys().size());
+        assertTrue(capturedRequest.getKeys().stream()
+                .map(DeleteObjectsRequest.KeyVersion::getKey)
+                .allMatch(keys::contains));
+    }
+
+    @Test
+    void deleteFilesBulk_EmptyList() {
+        // Act
+        s3Service.deleteFilesBulk(Collections.emptyList());
+
+        // Assert
+        verify(s3Client, never()).deleteObjects(any(DeleteObjectsRequest.class));
+    }
+
+    @Test
+    void deleteFilesBulk_NullList() {
+        // Act
+        s3Service.deleteFilesBulk(null);
+
+        // Assert
+        verify(s3Client, never()).deleteObjects(any(DeleteObjectsRequest.class));
     }
 } 
