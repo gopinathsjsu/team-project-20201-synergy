@@ -81,7 +81,7 @@ public class RestaurantManagerController {
             return ResponseEntity.ok(BTResponse.success(urls));
         } catch (Exception e) {
             log.error("error with presigned url generation: ", e);
-            return ResponseEntity.ok(BTResponse.failure("Error generating pre-signed URLs"));
+            return ResponseEntity.internalServerError().body(BTResponse.failure("Error generating pre-signed URLs"));
         }
 
     }

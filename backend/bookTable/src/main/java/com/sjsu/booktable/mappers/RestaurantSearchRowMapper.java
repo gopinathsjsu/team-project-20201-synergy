@@ -41,7 +41,7 @@ public class RestaurantSearchRowMapper implements RowMapper<RestaurantSearchDeta
         if (hasColumn(rs, "approved")) {
             searchDetails.setApproved(rs.getBoolean("approved"));
         } else {
-            searchDetails.setApproved(null); // Default to false if not present
+            searchDetails.setApproved(null);
         }
 
         return searchDetails;
