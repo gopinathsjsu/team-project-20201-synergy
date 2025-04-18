@@ -1,103 +1,31 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import {
-  InputLabel,
-  Select,
   Container,
   Typography,
-  TextField,
   Button,
-  Grid,
   Box,
-  MenuItem,
   Paper,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
+  CircularProgress,
+  Snackbar,
   Alert,
-  FormControl,
-  FormHelperText,
-  InputAdornment,
-  Chip,
 } from "@mui/material";
 import {
-  Delete as DeleteIcon,
-  CloudUpload as CloudUploadIcon,
-} from "@mui/icons-material";
-import {
   formatUSPhoneNumber,
-  formatPhoneForDisplay,
   convert12To24,
-  convert24To12,
   generateFullTimeOptions,
   generateTimeSlotsBetween,
 } from "../../utils/restaurantManagerFormUtils";
-
-const DAYS_OF_WEEK = {
-  0: "Sunday",
-  1: "Monday",
-  2: "Tuesday",
-  3: "Wednesday",
-  4: "Thursday",
-  5: "Friday",
-  6: "Saturday",
-};
-
-const US_STATES = {
-  AL: "Alabama",
-  AK: "Alaska",
-  AZ: "Arizona",
-  AR: "Arkansas",
-  CA: "California",
-  CO: "Colorado",
-  CT: "Connecticut",
-  DE: "Delaware",
-  FL: "Florida",
-  GA: "Georgia",
-  HI: "Hawaii",
-  ID: "Idaho",
-  IL: "Illinois",
-  IN: "Indiana",
-  IA: "Iowa",
-  KS: "Kansas",
-  KY: "Kentucky",
-  LA: "Louisiana",
-  ME: "Maine",
-  MD: "Maryland",
-  MA: "Massachusetts",
-  MI: "Michigan",
-  MN: "Minnesota",
-  MS: "Mississippi",
-  MO: "Missouri",
-  MT: "Montana",
-  NE: "Nebraska",
-  NV: "Nevada",
-  NH: "New Hampshire",
-  NJ: "New Jersey",
-  NM: "New Mexico",
-  NY: "New York",
-  NC: "North Carolina",
-  ND: "North Dakota",
-  OH: "Ohio",
-  OK: "Oklahoma",
-  OR: "Oregon",
-  PA: "Pennsylvania",
-  RI: "Rhode Island",
-  SC: "South Carolina",
-  SD: "South Dakota",
-  TN: "Tennessee",
-  TX: "Texas",
-  UT: "Utah",
-  VT: "Vermont",
-  VA: "Virginia",
-  WA: "Washington",
-  WV: "West Virginia",
-  WI: "Wisconsin",
-  WY: "Wyoming",
-};
+import BasicDetailsForm from "../../components/restaurant-manager/RestaurantForm/BasicDetailsForm";
+import OperatingHoursForm from "../../components/restaurant-manager/RestaurantForm/OperatingHoursForm";
+import TableConfigurationsForm from "../../components/restaurant-manager/RestaurantForm/TableConfigurationsForm";
+import PhotoUploadsForm from "../../components/restaurant-manager/RestaurantForm/PhotoUploadsForm";
+import {
+  addRestaurant,
+  deleteFilesBulk,
+  uploadImageToS3,
+} from "../../pages/api/restaurant-manager-api";
+import { transformToRestaurantRequest } from "../../mappers/restaurantRequest";
 
 export default function AddRestaurant() {
   const router = useRouter();
@@ -178,11 +106,16 @@ export default function AddRestaurant() {
 
   const [newTableSize, setNewTableSize] = useState("");
   const [newTableCount, setNewTableCount] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
   const [contactPhoneRaw, setContactPhoneRaw] = useState("");
   // Separate state for the main photo preview
   const [mainImagePreview, setMainImagePreview] = useState(null);
   // Preview for additional photos is handled by listing file names (or you can enhance that similarly)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error",
+  });
 
   // Validation function returns an object of errors
   const validateForm = () => {
@@ -301,12 +234,8 @@ export default function AddRestaurant() {
   const handleOperatingHoursChange = (day, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      operatingHours: prev.operatingHours.map((hour) =>
-        hour.day === day
-          ? field === "isOpen" && value === false
-            ? { ...hour, isOpen: false, open: undefined, close: undefined }
-            : { ...hour, [field]: value }
-          : hour
+      operatingHours: prev.operatingHours.map((item) =>
+        item.day === day ? { ...item, [field]: value } : item
       ),
     }));
   };
@@ -328,6 +257,27 @@ export default function AddRestaurant() {
       operatingHours: prev.operatingHours.map((item) =>
         item.day === day ? { ...item, [field]: time24 } : item
       ),
+    }));
+  };
+
+  const handleOperatingHourSlotToggle = (day, slot) => {
+    setFormData((prev) => ({
+      ...prev,
+      operatingHours: prev.operatingHours.map((item) => {
+        if (item.day === day) {
+          const selected = item.timeSlots.selected.includes(slot)
+            ? item.timeSlots.selected.filter((s) => s !== slot)
+            : [...item.timeSlots.selected, slot];
+          return {
+            ...item,
+            timeSlots: {
+              ...item.timeSlots,
+              selected,
+            },
+          };
+        }
+        return item;
+      }),
     }));
   };
 
@@ -358,6 +308,34 @@ export default function AddRestaurant() {
           contactPhone: canonical,
         },
       }));
+    }
+  };
+
+  const onTableSizeChange = (e) => {
+    const val = e.target.value;
+    if (val === "") {
+      setNewTableSize("");
+    } else {
+      const num = parseInt(val, 10);
+      if (num > 0) {
+        setNewTableSize(num);
+      } else {
+        setNewTableSize("");
+      }
+    }
+  };
+
+  const onTableCountChange = (e) => {
+    const val = e.target.value;
+    if (val === "") {
+      setNewTableCount("");
+    } else {
+      const num = parseInt(val, 10);
+      if (num > 0) {
+        setNewTableCount(num);
+      } else {
+        setNewTableCount("");
+      }
     }
   };
 
@@ -445,16 +423,71 @@ export default function AddRestaurant() {
 
   // On submit, force validation and then check errors
   const handleSubmit = async (e) => {
-    console.log("Form data:", formData);
+    console.log("Form data before validation:", formData);
     e.preventDefault();
+
     const newErrors = validateForm();
     setErrors(newErrors);
     setShowErrors(true);
+
     if (Object.keys(newErrors).length !== 0) return;
 
-    // TODO: Implement API call to add restaurant
-    console.log("Form submitted:", formData);
-    // router.push('/restaurant-manager/dashboard');
+    setIsSubmitting(true);
+
+    let uploadedImagesKeys = [];
+
+    try {
+      // --- Image Upload Section ---
+      if (!formData.mainPhoto) {
+        throw new Error("Main photo is required");
+      }
+
+      const mainPhotoUploadResult = await uploadImageToS3(
+        formData.mainPhoto,
+        "restaurants/main"
+      );
+      // Assume uploadImageToS3 returns an object { url, key }.
+      uploadedImagesKeys.push(mainPhotoUploadResult.key);
+      const mainPhotoUrl = mainPhotoUploadResult.key;
+
+      // Upload any additional photos (if present).
+      let additionalPhotoUrls = [];
+      for (let photoObj of formData.additionalPhotos) {
+        const additionalUploadResult = await uploadImageToS3(
+          photoObj.file,
+          "restaurants/additional"
+        );
+        uploadedImagesKeys.push(additionalUploadResult.key);
+        additionalPhotoUrls.push(additionalUploadResult.key);
+      }
+
+      // --- Construct Payload ---
+      const payload = transformToRestaurantRequest(formData);
+      payload.mainPhotoUrl = mainPhotoUrl;
+      payload.additionalPhotoUrls = additionalPhotoUrls;
+
+      // --- API Call for Adding Restaurant ---
+      const result = await addRestaurant(payload);
+
+      setIsSubmitting(false);
+      router.push("/restaurant-manager/dashboard");
+    } catch (error) {
+      // If any error occurs, attempt to clean up the already uploaded images.
+      if (uploadedImagesKeys.length > 0) {
+        try {
+          await deleteFilesBulk(uploadedImagesKeys);
+        } catch (cleanupError) {
+          console.error("Error cleaning up S3 uploads:", cleanupError);
+        }
+      }
+      setIsSubmitting(false);
+      // Display error message via Snackbar.
+      setSnackbar({
+        open: true,
+        message: error.message || "Failed to register restaurant",
+        severity: "error",
+      });
+    }
   };
 
   return (
@@ -466,570 +499,46 @@ export default function AddRestaurant() {
         <Paper elevation={3} sx={{ p: 3 }}>
           <form onSubmit={handleSubmit}>
             {/* Restaurant Information Section */}
-            <Typography variant="h6" gutterBottom>
-              Basic Information
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Restaurant Name"
-                  name="name"
-                  value={formData.basicDetails.name}
-                  onChange={handleBasicDetailsChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl
-                  fullWidth
-                  variant="outlined"
-                  sx={{ marginBottom: 2 }}
-                  error={!!errors.cuisineType}
-                >
-                  <InputLabel>Cuisine Type</InputLabel>
-                  <Select
-                    required
-                    sx={{ minWidth: "150px" }}
-                    label="Cuisine Type"
-                    name="cuisineType"
-                    value={formData.basicDetails.cuisineType}
-                    onChange={handleBasicDetailsChange}
-                  >
-                    <MenuItem value="">
-                      <em>Select Cuisine Type</em>
-                    </MenuItem>
-                    <MenuItem value="Italian">Italian</MenuItem>
-                    <MenuItem value="Mexican">Mexican</MenuItem>
-                    <MenuItem value="Chinese">Chinese</MenuItem>
-                    <MenuItem value="Indian">Indian</MenuItem>
-                    <MenuItem value="American">American</MenuItem>
-                    <MenuItem value="Japanese">Japanese</MenuItem>
-                    <MenuItem value="Korean">Korean</MenuItem>
-                    <MenuItem value="Thai">Thai</MenuItem>
-                    <MenuItem value="Vietnamese">Vietnamese</MenuItem>
-                    <MenuItem value="Other">Other</MenuItem>
-                  </Select>
-                  <FormHelperText sx={{ color: "error.main" }}>
-                    {errors.cuisineType}
-                  </FormHelperText>
-                </FormControl>
-              </Grid>
-              {formData.basicDetails.cuisineType === "Other" && (
-                <Grid item xs={12}>
-                  <TextField
-                    required
-                    fullWidth
-                    label="Specify Cuisine Type"
-                    name="customCuisineType"
-                    value={formData.basicDetails.customCuisineType}
-                    onChange={handleBasicDetailsChange}
-                    error={!!errors.customCuisineType}
-                    helperText={errors.customCuisineType}
-                  />
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  variant="outlined"
-                  sx={{ marginBottom: 2 }}
-                  label="Address Line"
-                  name="addressLine"
-                  value={formData.basicDetails.addressLine}
-                  onChange={handleBasicDetailsChange}
-                  error={!!errors.addressLine}
-                  helperText={errors.addressLine}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="City"
-                  name="city"
-                  value={formData.basicDetails.city}
-                  onChange={handleBasicDetailsChange}
-                  error={!!errors.city}
-                  helperText={errors.city}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl
-                  fullWidth
-                  variant="outlined"
-                  sx={{ marginBottom: 2 }}
-                  error={!!errors.state}
-                >
-                  <InputLabel>State</InputLabel>
-                  <Select
-                    required
-                    sx={{ minWidth: "100px" }}
-                    label="State"
-                    name="state"
-                    value={formData.basicDetails.state}
-                    onChange={handleBasicDetailsChange}
-                  >
-                    <MenuItem value="">
-                      <em>Select State</em>
-                    </MenuItem>
-                    {Object.entries(US_STATES).map(([abbr, name]) => (
-                      <MenuItem key={abbr} value={abbr}>
-                        {name} ({abbr})
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText sx={{ color: "error.main" }}>
-                    {errors.state}
-                  </FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="ZIP Code"
-                  name="zipCode"
-                  value={formData.basicDetails.zipCode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-                    handleBasicDetailsChange({
-                      target: { name: "zipCode", value },
-                    });
-                  }}
-                  error={!!errors.zipCode}
-                  helperText={errors.zipCode}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Country"
-                  name="country"
-                  value="USA"
-                  disabled
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Contact Number"
-                  name="contactPhone"
-                  // If 10 digits are present, display the pretty format;
-                  // otherwise, show what the user has typed.
-                  value={
-                    contactPhoneRaw.length === 10
-                      ? formatPhoneForDisplay(contactPhoneRaw)
-                      : contactPhoneRaw
-                  }
-                  onChange={handleContactPhoneChange}
-                  onBlur={handleContactPhoneBlur}
-                  error={!!errors.contactPhone}
-                  helperText={
-                    errors.contactPhone ||
-                    "Enter exactly 10 digits (US number only)"
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">+1</InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Description"
-                  name="description"
-                  value={formData.basicDetails.description}
-                  onChange={handleBasicDetailsChange}
-                  error={!!errors.description}
-                  helperText={errors.description}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl
-                  fullWidth
-                  variant="outlined"
-                  sx={{ marginBottom: 2 }}
-                  error={!!errors.costRating}
-                >
-                  <InputLabel>Cost Rating</InputLabel>
-                  <Select
-                    required
-                    sx={{ minWidth: "150px" }}
-                    label="Cost Rating"
-                    name="costRating"
-                    value={formData.basicDetails.costRating}
-                    onChange={handleBasicDetailsChange}
-                  >
-                    <MenuItem value="">
-                      <em>Select Cost Rating</em>
-                    </MenuItem>
-                    <MenuItem value={1}>$</MenuItem>
-                    <MenuItem value={2}>$$</MenuItem>
-                    <MenuItem value={3}>$$$</MenuItem>
-                    <MenuItem value={4}>$$$$</MenuItem>
-                  </Select>
-                  <FormHelperText sx={{ color: "error.main" }}>
-                    {errors.costRating}
-                  </FormHelperText>
-                </FormControl>
-              </Grid>
-            </Grid>
+            <BasicDetailsForm
+              basicDetails={formData.basicDetails}
+              phone={contactPhoneRaw}
+              onPhoneChange={handleContactPhoneChange}
+              onPhoneBlur={handleContactPhoneBlur}
+              errors={errors}
+              onChange={handleBasicDetailsChange}
+            />
 
             {/* Operating Hours Section */}
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Operating Hours
-            </Typography>
-            <Grid container spacing={2}>
-              {formData.operatingHours.map((hour) => (
-                <Grid item xs={12} key={hour.day}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={hour.isOpen}
-                          onChange={(e) =>
-                            handleOperatingHoursChange(
-                              hour.day,
-                              "isOpen",
-                              e.target.checked
-                            )
-                          }
-                        />
-                      }
-                      label={
-                        hour.day.charAt(0).toUpperCase() + hour.day.slice(1)
-                      }
-                    />
-                    {hour.isOpen && (
-                      <>
-                        <TextField
-                          select
-                          label="Open"
-                          value={hour.open || ""}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              operatingHours: prev.operatingHours.map((item) =>
-                                item.day === hour.day
-                                  ? { ...item, open: e.target.value }
-                                  : item
-                              ),
-                            }))
-                          }
-                          onBlur={(e) =>
-                            handleOperatingHourTimeBlur(
-                              hour.day,
-                              "open",
-                              e.target.value
-                            )
-                          }
-                          sx={{ minWidth: 120 }}
-                        >
-                          {generateFullTimeOptions().map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.display}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                        <TextField
-                          select
-                          label="Close"
-                          value={hour.close || ""}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              operatingHours: prev.operatingHours.map((item) =>
-                                item.day === hour.day
-                                  ? { ...item, close: e.target.value }
-                                  : item
-                              ),
-                            }))
-                          }
-                          onBlur={(e) =>
-                            handleOperatingHourTimeBlur(
-                              hour.day,
-                              "close",
-                              e.target.value
-                            )
-                          }
-                          sx={{ minWidth: 120 }}
-                        >
-                          {generateFullTimeOptions().map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.display}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                      </>
-                    )}
-                    {hour.isOpen &&
-                      hour.timeSlots &&
-                      hour.timeSlots.allSlots.length > 0 && (
-                        <Box
-                          sx={{
-                            mt: 1,
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 1,
-                          }}
-                        >
-                          {hour.timeSlots.allSlots.map((slot) => {
-                            const isSelected =
-                              hour.timeSlots.selected.includes(slot);
-                            return (
-                              <Chip
-                                key={slot}
-                                label={convert24To12(slot)}
-                                color={isSelected ? "primary" : "default"}
-                                onClick={() => {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    operatingHours: prev.operatingHours.map(
-                                      (item) => {
-                                        if (item.day === hour.day) {
-                                          const selected =
-                                            item.timeSlots.selected.includes(
-                                              slot
-                                            )
-                                              ? item.timeSlots.selected.filter(
-                                                  (s) => s !== slot
-                                                )
-                                              : [
-                                                  ...item.timeSlots.selected,
-                                                  slot,
-                                                ];
-                                          return {
-                                            ...item,
-                                            timeSlots: {
-                                              ...item.timeSlots,
-                                              selected,
-                                            },
-                                          };
-                                        }
-                                        return item;
-                                      }
-                                    ),
-                                  }));
-                                }}
-                              />
-                            );
-                          })}
-                        </Box>
-                      )}
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-            {errors.operatingHours && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {errors.operatingHours.split("\n").map((error, index) => (
-                  <div key={index}>{error}</div>
-                ))}
-              </Alert>
-            )}
-            {/* Table Configurations Section */}
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Table Configurations
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Table Size"
-                  value={newTableSize}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setNewTableSize("");
-                    } else {
-                      const num = parseInt(val, 10);
-                      if (num > 0) {
-                        setNewTableSize(num);
-                      } else {
-                        setNewTableSize("");
-                      }
-                    }
-                  }}
-                  slotProps={{
-                    input: { min: 1 },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Number of Tables"
-                  value={newTableCount}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setNewTableCount("");
-                    } else {
-                      const num = parseInt(val, 10);
-                      if (num > 0) {
-                        setNewTableCount(num);
-                      } else {
-                        setNewTableCount("");
-                      }
-                    }
-                  }}
-                  slotProps={{
-                    input: { min: 1 },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  onClick={addTableConfiguration}
-                  disabled={newTableSize === "" || newTableCount === ""} // Only enabled when both are non-empty.
-                >
-                  Add Table Configuration
-                </Button>
-              </Grid>
-            </Grid>
-            {errors.tableConfigurations && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {errors.tableConfigurations}
-              </Alert>
-            )}
+            <OperatingHoursForm
+              operatingHours={formData.operatingHours}
+              onHourChange={handleOperatingHoursChange}
+              onTimeBlur={handleOperatingHourTimeBlur}
+              onSlotToggle={handleOperatingHourSlotToggle}
+              errors={errors}
+            />
 
-            <List>
-              {formData.tableConfigurations.map((config, index) => (
-                <ListItem
-                  key={index}
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      onClick={() => removeTableConfiguration(index)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText
-                    primary={`${config.size} seats - ${config.count} tables`}
-                  />
-                </ListItem>
-              ))}
-            </List>
+            {/* Table Configurations Section */}
+            <TableConfigurationsForm
+              tableConfigurations={formData.tableConfigurations}
+              newTableSize={newTableSize}
+              newTableCount={newTableCount}
+              onSizeChange={onTableSizeChange}
+              onCountChange={onTableCountChange}
+              onAdd={addTableConfiguration}
+              onRemove={removeTableConfiguration}
+              error={errors.tableConfigurations}
+            />
 
             {/* Photo Upload Section */}
-            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-              Photos
-            </Typography>
-            <Grid container spacing={2}>
-              {/* Main Photo Upload */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">
-                  Main Photo (Required)
-                </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<CloudUploadIcon />}
-                >
-                  Upload Main Photo
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={(e) => handlePhotoUpload(e, true)}
-                  />
-                </Button>
-                {mainImagePreview && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Preview:
-                    </Typography>
-                    <img
-                      src={mainImagePreview}
-                      alt="Main photo preview"
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "300px",
-                        objectFit: "contain",
-                      }}
-                    />
-                  </Box>
-                )}
-                {errors.mainPhoto && (
-                  <Alert severity="error" sx={{ mt: 1 }}>
-                    {errors.mainPhoto}
-                  </Alert>
-                )}
-              </Grid>
-
-              {/* Additional Photos Upload */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">
-                  Additional Photos (Up to 5)
-                </Typography>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  startIcon={<CloudUploadIcon />}
-                >
-                  Upload Additional Photos
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handlePhotoUpload(e, false)}
-                  />
-                </Button>
-                {errors.additionalPhotos && (
-                  <Alert severity="error" sx={{ mt: 1 }}>
-                    {errors.additionalPhotos}
-                  </Alert>
-                )}
-                {/* Display each additional photo preview as a thumbnail */}
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                  {formData.additionalPhotos.map((photoObj, index) => (
-                    <Box key={index} sx={{ position: "relative" }}>
-                      <img
-                        src={photoObj.preview}
-                        alt={`Additional photo ${index + 1}`}
-                        style={{
-                          width: "100px",
-                          height: "100px",
-                          objectFit: "cover",
-                          borderRadius: 4,
-                        }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() => removeAdditionalPhoto(index)}
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          right: 0,
-                          backgroundColor: "rgba(255,255,255,0.7)",
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Box>
-              </Grid>
-            </Grid>
+            <PhotoUploadsForm
+              mainPhotoPreview={mainImagePreview}
+              onMainPhotoUpload={handlePhotoUpload}
+              mainPhotoError={errors.mainPhoto}
+              additionalPhotos={formData.additionalPhotos}
+              onAdditionalPhotoUpload={handlePhotoUpload}
+              onAdditionalPhotoRemove={removeAdditionalPhoto}
+              additionalPhotosError={errors.additionalPhotos}
+            />
 
             {/* Form Actions */}
             <Box
@@ -1051,13 +560,32 @@ export default function AddRestaurant() {
                 variant="contained"
                 color="primary"
                 onClick={handleSubmit}
+                disabled={isSubmitting}
               >
-                Register
+                {isSubmitting ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Register"
+                )}
               </Button>
             </Box>
           </form>
         </Paper>
       </Box>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
