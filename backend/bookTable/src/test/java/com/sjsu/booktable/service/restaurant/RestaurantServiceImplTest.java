@@ -1,13 +1,16 @@
 package com.sjsu.booktable.service.restaurant;
 
+import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.restaurant.RestaurantException;
 import com.sjsu.booktable.model.dto.restaurant.*;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchResponse;
+import com.sjsu.booktable.model.entity.Photo;
 import com.sjsu.booktable.model.entity.Restaurant;
 import com.sjsu.booktable.repository.RestaurantRepository;
 import com.sjsu.booktable.service.booking.BookingService;
+import com.sjsu.booktable.service.s3.S3Service;
 import com.sjsu.booktable.validator.RestaurantValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,9 +45,6 @@ class RestaurantServiceImplTest {
     private RestaurantHoursService restaurantHoursService;
 
     @Mock
-    private PhotoService photoService;
-
-    @Mock
     private BookingService bookingService;
 
     @Mock
@@ -52,6 +52,12 @@ class RestaurantServiceImplTest {
 
     @Mock
     private GoogleMapsService googleMapsService;
+
+    @Mock
+    private S3Service s3Service;
+
+    @Mock
+    private PhotoService photoService;
 
     @InjectMocks
     private RestaurantServiceImpl restaurantService;
@@ -147,6 +153,11 @@ class RestaurantServiceImplTest {
         when(restaurantRepository.addRestaurantDetails(any(), anyDouble(), anyDouble(), anyString(), anyString()))
                 .thenReturn(1);
         when(googleMapsService.geocode(anyString())).thenReturn(new double[]{37.3382, -121.8863});
+        doNothing().when(validator).validateRestaurantRequest(restaurantRequest);
+        doNothing().when(tableService).addTables(anyInt(), any());
+        doNothing().when(restaurantHoursService).addHours(anyInt(), any());
+        doNothing().when(timeSlotService).addTimeSlots(anyInt(), any());
+        doNothing().when(photoService).addPhoto(any());
 
         // Act
         RestaurantResponse response = restaurantService.addRestaurant(restaurantRequest, "1");
@@ -160,6 +171,10 @@ class RestaurantServiceImplTest {
         // Verify interactions
         verify(validator).validateRestaurantRequest(restaurantRequest);
         verify(restaurantRepository).addRestaurantDetails(any(), eq(37.3382), eq(-121.8863), anyString(), eq("1"));
+        verify(tableService).addTables(anyInt(), any());
+        verify(restaurantHoursService).addHours(anyInt(), any());
+        verify(timeSlotService).addTimeSlots(anyInt(), any());
+        verify(photoService, times(2)).addPhoto(any()); // Expect 2 calls for 2 additional photos
     }
 
     @Test
@@ -171,8 +186,23 @@ class RestaurantServiceImplTest {
         existingRestaurant.setName("Old Name");
         existingRestaurant.setMainPhotoUrl("old-url");
 
+        // Setup existing photos
+        List<Photo> existingPhotos = new ArrayList<>();
+        Photo existingPhoto = new Photo();
+        existingPhoto.setRestaurantId(1);
+        existingPhoto.setS3URL("old-photo.jpg");
+        existingPhotos.add(existingPhoto);
+
         when(restaurantRepository.findById(1)).thenReturn(existingRestaurant);
         when(googleMapsService.geocode(anyString())).thenReturn(new double[]{37.3382, -121.8863});
+        doNothing().when(validator).validateRestaurantRequest(restaurantRequest);
+        doNothing().when(tableService).replaceTables(anyInt(), any());
+        doNothing().when(restaurantHoursService).replaceHours(anyInt(), any());
+        doNothing().when(timeSlotService).replaceTimeSlots(anyInt(), any());
+        when(photoService.getPhotosByRestaurantId(anyInt())).thenReturn(existingPhotos);
+        doNothing().when(photoService).deletePhotoByRestaurantIdAndS3Url(anyInt(), anyList());
+        doNothing().when(photoService).addPhoto(any());
+        doNothing().when(s3Service).deleteFilesBulk(any());
 
         // Act
         RestaurantResponse response = restaurantService.updateRestaurant(1, restaurantRequest, "1");
@@ -185,6 +215,13 @@ class RestaurantServiceImplTest {
         // Verify interactions
         verify(validator).validateRestaurantRequest(restaurantRequest);
         verify(restaurantRepository).updateRestaurantDetails(anyInt(), any(), anyDouble(), anyDouble(), anyString());
+        verify(tableService).replaceTables(anyInt(), any());
+        verify(restaurantHoursService).replaceHours(anyInt(), any());
+        verify(timeSlotService).replaceTimeSlots(anyInt(), any());
+        verify(photoService).getPhotosByRestaurantId(anyInt());
+        verify(photoService).deletePhotoByRestaurantIdAndS3Url(anyInt(), eq(Arrays.asList("old-photo.jpg")));
+        verify(photoService, times(2)).addPhoto(any()); // Expect 2 calls for 2 new photos
+        verify(s3Service, times(2)).deleteFilesBulk(any()); // Expect 2 calls - one for main photo, one for additional photos
     }
 
     @Test
@@ -201,7 +238,7 @@ class RestaurantServiceImplTest {
                 () -> restaurantService.updateRestaurant(1, restaurantRequest, "1"));
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
-        assertEquals("Unauthorized: Manager does not own this restaurant or restaurant not found", exception.getMessage());
+        assertEquals("Unauthorized: Manager does not own this restaurant", exception.getMessage());
     }
 
     @Test
@@ -290,5 +327,102 @@ class RestaurantServiceImplTest {
         assertNotNull(response);
         assertEquals(0, response.getCount());
         assertTrue(response.getRestaurantSearchDetails().isEmpty());
+    }
+
+    @Test
+    void fetchRestaurantsByManager_EmptyManagerId() {
+        // Act & Assert
+        assertThrows(InvalidRequestException.class,
+                () -> restaurantService.fetchRestaurantsByManager(""));
+    }
+
+    @Test
+    void fetchRestaurantsByManager_RepositoryError() {
+        // Arrange
+        when(restaurantRepository.findByManagerId(anyString()))
+                .thenThrow(new RuntimeException("Database error"));
+
+        // Act
+        RestaurantSearchResponse response = restaurantService.fetchRestaurantsByManager("1");
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(0, response.getCount());
+        assertTrue(response.getRestaurantSearchDetails().isEmpty());
+    }
+
+    @Test
+    void fetchRestaurantDetails_NotFound() {
+        // Arrange
+        when(restaurantRepository.findById(anyInt())).thenReturn(null);
+
+        // Act & Assert
+        RestaurantException exception = assertThrows(RestaurantException.class,
+                () -> restaurantService.fetchRestaurantDetails(1));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    }
+
+    @Test
+    void searchRestaurants_InvalidCoordinates() {
+        // Arrange
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(1000.0); // Invalid latitude
+        request.setLongitude(1000.0); // Invalid longitude
+        request.setDate(LocalDate.now());
+        request.setTime(LocalTime.now());
+        request.setPartySize(2);
+        request.setSearchText("");
+
+        when(restaurantRepository.searchRestaurants(anyDouble(), anyDouble(), anyString()))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        RestaurantSearchResponse response = restaurantService.searchRestaurants(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(0, response.getCount());
+        assertTrue(response.getRestaurantSearchDetails().isEmpty());
+    }
+
+    @Test
+    void searchRestaurants_EmptySearchResults() {
+        // Arrange
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(37.3382);
+        request.setLongitude(-121.8863);
+        request.setDate(LocalDate.now());
+        request.setTime(LocalTime.now());
+        request.setPartySize(2);
+        request.setSearchText("NonExistentRestaurant");
+
+        when(restaurantRepository.searchRestaurants(anyDouble(), anyDouble(), anyString()))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        RestaurantSearchResponse response = restaurantService.searchRestaurants(request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(0, response.getCount());
+        assertTrue(response.getRestaurantSearchDetails().isEmpty());
+    }
+
+    @Test
+    void searchRestaurants_RepositoryError() {
+        // Arrange
+        RestaurantSearchRequest request = new RestaurantSearchRequest();
+        request.setLatitude(37.3382);
+        request.setLongitude(-121.8863);
+        request.setDate(LocalDate.now());
+        request.setTime(LocalTime.now());
+        request.setPartySize(2);
+
+        when(restaurantRepository.searchRestaurants(anyDouble(), anyDouble(), anyString()))
+                .thenThrow(new RuntimeException("Database error"));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class,
+                () -> restaurantService.searchRestaurants(request));
     }
 } 
