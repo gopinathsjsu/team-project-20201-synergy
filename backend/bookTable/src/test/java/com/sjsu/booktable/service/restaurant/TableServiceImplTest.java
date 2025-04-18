@@ -1,6 +1,6 @@
 package com.sjsu.booktable.service.restaurant;
 
-import com.sjsu.booktable.model.dto.restaurant.TableRequest;
+import com.sjsu.booktable.model.dto.restaurant.TableConfigurationDto;
 import com.sjsu.booktable.repository.TableRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,38 +25,38 @@ class TableServiceImplTest {
     @InjectMocks
     private TableServiceImpl tableService;
 
-    private List<TableRequest> tableRequests;
+    private List<TableConfigurationDto> tableConfigurationDtos;
 
     @BeforeEach
     void setUp() {
-        TableRequest table1 = new TableRequest();
+        TableConfigurationDto table1 = new TableConfigurationDto();
         table1.setSize(4);
         table1.setQuantity(2);
 
-        TableRequest table2 = new TableRequest();
+        TableConfigurationDto table2 = new TableConfigurationDto();
         table2.setSize(6);
         table2.setQuantity(1);
 
-        tableRequests = Arrays.asList(table1, table2);
+        tableConfigurationDtos = Arrays.asList(table1, table2);
     }
 
     @Test
     void addTables_Success() {
         // Act
-        tableService.addTables(1, tableRequests);
+        tableService.addTables(1, tableConfigurationDtos);
 
         // Assert
-        verify(tableRepository).insertTables(eq(1), eq(tableRequests));
+        verify(tableRepository).insertTables(eq(1), eq(tableConfigurationDtos));
     }
 
     @Test
     void replaceTables_Success() {
         // Act
-        tableService.replaceTables(1, tableRequests);
+        tableService.replaceTables(1, tableConfigurationDtos);
 
         // Assert
         verify(tableRepository).deleteByRestaurantId(1);
-        verify(tableRepository).insertTables(eq(1), eq(tableRequests));
+        verify(tableRepository).insertTables(eq(1), eq(tableConfigurationDtos));
     }
 
     @Test

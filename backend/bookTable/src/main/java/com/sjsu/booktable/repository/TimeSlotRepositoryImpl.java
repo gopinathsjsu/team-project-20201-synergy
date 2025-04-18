@@ -1,6 +1,8 @@
 package com.sjsu.booktable.repository;
 
+import com.sjsu.booktable.mappers.TimeSlotRowMapper;
 import com.sjsu.booktable.model.dto.restaurant.TimeSlotDto;
+import com.sjsu.booktable.model.entity.TimeSlot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -40,5 +42,11 @@ public class TimeSlotRepositoryImpl implements TimeSlotRepository {
     public List<LocalTime> getTimeSlotsByRestaurantAndDay(int restaurantId, int dayOfWeek) {
         String sql = "SELECT slot_time FROM time_slots WHERE restaurant_id = ? AND day_of_week = ? ORDER BY slot_time ";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getTime("slot_time").toLocalTime(), restaurantId, dayOfWeek);
+    }
+
+    @Override
+    public List<TimeSlot> getTimeSlotsByRestaurantId(int restaurantId) {
+        String sql = "SELECT * FROM time_slots WHERE restaurant_id = ? ORDER BY day_of_week, slot_time";
+        return jdbcTemplate.query(sql, new TimeSlotRowMapper(), restaurantId);
     }
 }

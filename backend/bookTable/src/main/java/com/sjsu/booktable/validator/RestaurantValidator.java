@@ -21,20 +21,12 @@ public class RestaurantValidator {
 
     private static final Set<Integer> ALL_DAYS = IntStream.rangeClosed(0, 6).boxed().collect(Collectors.toSet());
 
-    public void validateAddRequest(RestaurantRequest request) {
+    public void validateRestaurantRequest(RestaurantRequest request) {
         Map<Integer, HoursDto> hoursMap = buildHoursMap(request.getOperatingHours());
         Map<Integer, TimeSlotDto> slotsMap = buildSlotsMap(request.getTimeSlots());
         checkAllDaysPresent(hoursMap, "operating hours");
         checkAllDaysPresent(slotsMap, "time slots");
         validateTimeSlotsWithinHours(hoursMap, slotsMap);
-    }
-
-    public void validateUpdateRequest(RestaurantRequest request) {
-        Map<Integer, HoursDto> hoursMap = request.getOperatingHours() != null ? buildHoursMap(request.getOperatingHours()) : new HashMap<>();
-        Map<Integer, TimeSlotDto> slotsMap = request.getTimeSlots() != null ? buildSlotsMap(request.getTimeSlots()) : new HashMap<>();
-        if (!hoursMap.isEmpty()) checkAllDaysPresent(hoursMap, "operating hours");
-        if (!slotsMap.isEmpty()) checkAllDaysPresent(slotsMap, "time slots");
-        if (!hoursMap.isEmpty() && !slotsMap.isEmpty()) validateTimeSlotsWithinHours(hoursMap, slotsMap);
     }
 
     public void validateImageFile(MultipartFile file) {

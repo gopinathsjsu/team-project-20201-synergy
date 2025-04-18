@@ -1,11 +1,13 @@
 package com.sjsu.booktable.mappers;
 
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
-import com.sjsu.booktable.utils.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import static com.sjsu.booktable.utils.RestaurantUtil.getFormattedAddress;
+import static com.sjsu.booktable.utils.SQLUtils.hasColumn;
 
 public class RestaurantSearchRowMapper implements RowMapper<RestaurantSearchDetails> {
 
@@ -20,16 +22,29 @@ public class RestaurantSearchRowMapper implements RowMapper<RestaurantSearchDeta
         searchDetails.setCostRating(rs.getInt("cost_rating"));
 
         // Construct a formatted address from individual columns.
-        String address = StringUtils.nullSafeString(rs.getString("address_line")) + ", " +
-                StringUtils.nullSafeString(rs.getString("city")) + ", " +
-                StringUtils.nullSafeString(rs.getString("state")) + " " +
-                StringUtils.nullSafeString(rs.getString("zip_code"));
+        String address = getFormattedAddress(rs.getString("address_line"), rs.getString("city"),
+                rs.getString("state"), rs.getString("zip_code"));
         searchDetails.setAddress(address);
 
         searchDetails.setMainPhotoUrl(rs.getString("main_photo_url"));
-        double distanceMeters = rs.getDouble("distance");
-        double distanceMiles = distanceMeters / METERS_PER_MILE;
-        searchDetails.setDistance(distanceMiles);
+
+        // Check if the distance column exists in the ResultSet
+        if (hasColumn(rs, "distance")) {
+            double distanceMeters = rs.getDouble("distance");
+            double distanceMiles = distanceMeters / METERS_PER_MILE;
+            searchDetails.setDistance(distanceMiles);
+        } else {
+            searchDetails.setDistance(null);
+        }
+
+        // Check for approved column and set it if exists
+        if (hasColumn(rs, "approved")) {
+            searchDetails.setApproved(rs.getBoolean("approved"));
+        } else {
+            searchDetails.setApproved(null); // Default to false if not present
+        }
+
         return searchDetails;
     }
+
 }

@@ -12,4 +12,6 @@ public interface RestaurantHoursRepository {
     void deleteByRestaurantId(int restaurantId);
 
     RestaurantHours getHoursByRestaurantAndDay(int restaurantId, int dayOfWeek);
+
+    List<RestaurantHours> getHoursByRestaurantId(int restaurantId);
 }

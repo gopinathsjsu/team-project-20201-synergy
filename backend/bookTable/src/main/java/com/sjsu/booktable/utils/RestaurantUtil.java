@@ -13,6 +13,13 @@ public class RestaurantUtil {
                 request.getBasicDetails().getCountry());
     }
 
+    public static String getFormattedAddress(String addressLine, String city, String state, String zipcode) {
+        return StringUtils.nullSafeString(addressLine) + ", " +
+                StringUtils.nullSafeString(city) + ", " +
+                StringUtils.nullSafeString(state) + " " +
+                StringUtils.nullSafeString(zipcode);
+    }
+
 
 
 }

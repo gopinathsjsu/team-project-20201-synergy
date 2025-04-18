@@ -26,12 +26,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public Restaurant findById(int id) {
-        String sql = "SELECT * FROM restaurants WHERE id = ?";
+        String sql = "SELECT * FROM restaurants WHERE id = ? AND deleted = FALSE";
         return this.jdbcTemplate.queryForObject(sql, new RestaurantRowMapper(), id);
     }
 
     @Override
-    public int addRestaurantDetails(RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl, int managerId) {
+    public int addRestaurantDetails(RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl, String managerId) {
         String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?)";
 
@@ -52,7 +52,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             ps.setDouble(12, latitude);
             ps.setString(13, photoUrl);
             ps.setBoolean(14, false); // Pending approval
-            ps.setInt(15, managerId);
+            ps.setString(15, managerId);
             return ps;
         }, keyHolder);
 
@@ -71,19 +71,13 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     }
 
     @Override
-    public void updateMainPhotoUrl(int id, String mainPhotoUrl) {
-        String sql = "UPDATE restaurants SET main_photo_url = ? WHERE id = ?";
-        jdbcTemplate.update(sql, mainPhotoUrl, id);
-    }
-
-    @Override
     public List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText) {
         // Build the SQL query dynamically.
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
         sql.append("ST_Distance_Sphere(location, POINT(?, ?)) AS distance ");
         sql.append("FROM restaurants ");
-        sql.append("WHERE approved = TRUE ");
+        sql.append("WHERE approved = TRUE AND deleted = FALSE ");
         sql.append("AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? ");
 
         Object[] params;
@@ -98,6 +92,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
         sql.append("ORDER BY distance ASC");
         return jdbcTemplate.query(sql.toString(), new RestaurantSearchRowMapper(), params);
+    }
+
+    @Override
+    public List<RestaurantSearchDetails> findByManagerId(String managerId) {
+        String sql = "SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, approved FROM restaurants WHERE manager_id = ? AND deleted = FALSE";
+        return this.jdbcTemplate.query(sql, new RestaurantSearchRowMapper(), managerId);
     }
 
 }

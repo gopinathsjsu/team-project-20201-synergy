@@ -11,4 +11,6 @@ public interface RestaurantHoursService {
     void replaceHours(int restaurantId, List<HoursDto> hours);
 
     HoursDto getHoursForRestaurantAndDay(int restaurantId, int dayOfWeek);
+
+    List<HoursDto> getHoursForRestaurant(int restaurantId);
 }

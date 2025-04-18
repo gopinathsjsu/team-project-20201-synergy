@@ -50,4 +50,10 @@ public class RestaurantHoursRepositoryImpl implements RestaurantHoursRepository 
         String sql = "SELECT * FROM hours WHERE restaurant_id = ? AND day_of_week = ?";
         return jdbcTemplate.queryForObject(sql, new HoursRowMapper(), restaurantId, dayOfWeek);
     }
+
+    @Override
+    public List<RestaurantHours> getHoursByRestaurantId(int restaurantId) {
+        String sql = "SELECT * FROM hours WHERE restaurant_id = ?";
+        return jdbcTemplate.query(sql, new HoursRowMapper(), restaurantId);
+    }
 }

@@ -10,4 +10,6 @@ public interface PhotosRepository {
 
     List<Photo> getPhotosByRestaurantId(int restaurantId);
 
+    void deleteByRestaurantIdAndS3Url(int restaurantId, List<String> s3Urls);
+
 }

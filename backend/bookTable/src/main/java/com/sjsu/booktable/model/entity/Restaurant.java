@@ -32,6 +32,6 @@ public class Restaurant {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private boolean approved;
-    private int managerId;          // Links to the users (restaurant manager)
+    private String managerId;          // Links to the users (restaurant manager)
     private boolean deleted;
 }

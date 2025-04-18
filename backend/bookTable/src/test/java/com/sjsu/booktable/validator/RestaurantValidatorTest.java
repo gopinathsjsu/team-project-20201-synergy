@@ -50,35 +50,35 @@ class RestaurantValidatorTest {
     }
 
     @Test
-    void validateAddRequest_Success() {
+    void validateRestaurantRequest_Success() {
         // Act & Assert
-        assertDoesNotThrow(() -> validator.validateAddRequest(request));
+        assertDoesNotThrow(() -> validator.validateRestaurantRequest(request));
     }
 
     @Test
-    void validateAddRequest_MissingDays() {
+    void validateRestaurantRequest_MissingDays() {
         // Arrange
         request.getOperatingHours().remove(0); // Remove Sunday hours
 
         // Act & Assert
         InvalidRestaurantRequestException exception = assertThrows(InvalidRestaurantRequestException.class,
-                () -> validator.validateAddRequest(request));
+                () -> validator.validateRestaurantRequest(request));
         assertTrue(exception.getMessage().contains("Missing days in operating hours"));
     }
 
     @Test
-    void validateAddRequest_DuplicateDays() {
+    void validateRestaurantRequest_DuplicateDays() {
         // Arrange
         request.getOperatingHours().add(createHoursDto(0, LocalTime.of(11, 0), LocalTime.of(22, 0))); // Add duplicate Sunday
 
         // Act & Assert
         InvalidRestaurantRequestException exception = assertThrows(InvalidRestaurantRequestException.class,
-                () -> validator.validateAddRequest(request));
+                () -> validator.validateRestaurantRequest(request));
         assertTrue(exception.getMessage().contains("Duplicate day of week in operating hours"));
     }
 
     @Test
-    void validateAddRequest_TimeSlotOutsideHours() {
+    void validateRestaurantRequest_TimeSlotOutsideHours() {
         // Arrange
         List<LocalTime> times = new ArrayList<>(request.getTimeSlots().get(0).getTimes());
         times.add(LocalTime.of(10, 0)); // Add slot before opening time
@@ -86,23 +86,8 @@ class RestaurantValidatorTest {
 
         // Act & Assert
         InvalidRestaurantRequestException exception = assertThrows(InvalidRestaurantRequestException.class,
-                () -> validator.validateAddRequest(request));
+                () -> validator.validateRestaurantRequest(request));
         assertTrue(exception.getMessage().contains("outside operating hours"));
-    }
-
-    @Test
-    void validateUpdateRequest_Success() {
-        // Act & Assert
-        assertDoesNotThrow(() -> validator.validateUpdateRequest(request));
-    }
-
-    @Test
-    void validateUpdateRequest_PartialUpdate() {
-        // Arrange
-        request.setOperatingHours(null); // Only update time slots
-
-        // Act & Assert
-        assertDoesNotThrow(() -> validator.validateUpdateRequest(request));
     }
 
     @Test

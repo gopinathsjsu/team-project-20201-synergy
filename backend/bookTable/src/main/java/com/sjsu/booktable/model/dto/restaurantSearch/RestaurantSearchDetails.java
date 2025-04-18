@@ -13,8 +13,9 @@ public class RestaurantSearchDetails {
     private int costRating;
     private String address;
     private String mainPhotoUrl;
-    private double distance;
+    private Double distance;
 
     private List<String> availableTimeSlots;
+    private Boolean approved;
 
 }

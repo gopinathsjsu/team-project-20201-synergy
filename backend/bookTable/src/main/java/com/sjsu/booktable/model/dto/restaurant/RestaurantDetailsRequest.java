@@ -11,11 +11,13 @@ public class RestaurantDetailsRequest {
     @NotBlank
     private String name;
 
+    @NotBlank
     private String cuisineType;
 
     @Min(1) @Max(4)
     private int costRating;
 
+    @NotBlank
     private String description;
 
     @NotBlank
