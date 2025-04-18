@@ -14,13 +14,8 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-<<<<<<< HEAD
 import java.util.List;
 import java.time.LocalDateTime;
-=======
-import java.time.LocalDateTime;
-import java.util.List;
->>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
 
 @Repository
 public class RestaurantRepositoryImpl implements RestaurantRepository {
@@ -50,13 +45,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public void deleteById(int id) {
-<<<<<<< HEAD
         String sql = "UPDATE restaurants SET deleted = ? WHERE id = ?";
         jdbcTemplate.update(sql, true, id);
-=======
-        String sql = "DELETE FROM restaurants WHERE id = ?";
-        jdbcTemplate.update(sql, id);
->>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
     }
 
     @Override
@@ -64,12 +54,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         String sql = """
             SELECT r.* FROM restaurants r 
             JOIN bookings b ON r.id = b.restaurant_id 
-<<<<<<< HEAD
             WHERE b.booking_time BETWEEN ? AND ?
             AND r.deleted = false
-=======
-            WHERE b.booking_time BETWEEN ? AND ? 
->>>>>>> 2768e3a2c3df43ce0bd132a2afb78d04a824772d
             GROUP BY r.id 
             ORDER BY COUNT(b.id) DESC 
             LIMIT 10
@@ -131,7 +117,6 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText) {
-        // Build the SQL query dynamically.
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
         sql.append("ST_Distance_Sphere(location, POINT(?, ?)) AS distance ");
@@ -153,7 +138,4 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         sql.append("ORDER BY distance ASC");
         return jdbcTemplate.query(sql.toString(), new RestaurantSearchRowMapper(), params);
     }
-
 }
-
-
