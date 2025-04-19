@@ -5,18 +5,15 @@ import com.amazonaws.services.cognitoidp.model.GlobalSignOutRequest;
 import com.amazonaws.services.cognitoidp.model.GlobalSignOutResult;
 import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.auth.LogoutFailedException;
-import com.sjsu.booktable.model.dto.SendOTPRequest;
-import com.sjsu.booktable.model.dto.SendOTPResponse;
-import com.sjsu.booktable.model.dto.VerifyOTPRequest;
-import com.sjsu.booktable.model.dto.VerifyOTPResponse;
-import com.sjsu.booktable.model.enums.OTPIdentifier;
+import com.sjsu.booktable.model.dto.auth.SendOTPRequest;
+import com.sjsu.booktable.model.dto.auth.SendOTPResponse;
+import com.sjsu.booktable.model.dto.auth.VerifyOTPRequest;
+import com.sjsu.booktable.model.dto.auth.VerifyOTPResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

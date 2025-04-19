@@ -1,5 +1,6 @@
 package com.sjsu.booktable.model.entity;
 
+import com.sjsu.booktable.model.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,13 +11,15 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 
-    private Long id;
+    // in sync to Cognito user pool
+    private String userId;
     private String email;
     private String phoneNumber;
     private String firstName;
     private String lastName;
+    private Role role;
 
 }

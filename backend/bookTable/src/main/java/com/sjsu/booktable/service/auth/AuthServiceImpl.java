@@ -4,7 +4,7 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
 import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.auth.LogoutFailedException;
-import com.sjsu.booktable.model.dto.*;
+import com.sjsu.booktable.model.dto.auth.*;
 import com.sjsu.booktable.model.enums.OTPIdentifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

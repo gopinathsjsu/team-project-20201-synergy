@@ -1,6 +1,6 @@
 package com.sjsu.booktable.service.auth;
 
-import com.sjsu.booktable.model.dto.*;
+import com.sjsu.booktable.model.dto.auth.*;
 import org.springframework.security.core.Authentication;
 
 public interface AuthService {

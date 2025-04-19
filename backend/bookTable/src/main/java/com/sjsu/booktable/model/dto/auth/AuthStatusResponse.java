@@ -1,4 +1,4 @@
-package com.sjsu.booktable.model.dto;
+package com.sjsu.booktable.model.dto.auth;
 
 import lombok.Data;
 
