@@ -1,9 +1,9 @@
 package com.sjsu.booktable.controller;
 
 import com.sjsu.booktable.model.dto.BTResponse;
-import com.sjsu.booktable.model.dto.SendOTPRequest;
-import com.sjsu.booktable.model.dto.VerifyOTPRequest;
-import com.sjsu.booktable.model.dto.VerifyOTPResponse;
+import com.sjsu.booktable.model.dto.auth.SendOTPRequest;
+import com.sjsu.booktable.model.dto.auth.VerifyOTPRequest;
+import com.sjsu.booktable.model.dto.auth.VerifyOTPResponse;
 import com.sjsu.booktable.service.auth.AuthService;
 import com.sjsu.booktable.utils.StringUtils;
 import jakarta.servlet.http.Cookie;
