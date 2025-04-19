@@ -61,7 +61,7 @@ function AppLayout({ children }) {
 
   return (
     <>
-      <AppBar position="sticky" color="transparent">
+      <AppBar position="static" color="primary">
         <Box className="flex-between">
           <Typography
             variant="h5"
