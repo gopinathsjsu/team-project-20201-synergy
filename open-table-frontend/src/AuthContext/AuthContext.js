@@ -15,8 +15,8 @@ function AuthProvider({ children }) {
         const res = await axios.get(`${BASE_URL}/api/auth/status`, {
           withCredentials: true,
         });
-        const authData = res?.data;
-        setIsLoggedIn(authData);
+        const { loggedIn } = res?.data?.data;
+        setIsLoggedIn(loggedIn);
       } catch (err) {
         console.log(err);
       }
