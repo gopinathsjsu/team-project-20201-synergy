@@ -14,12 +14,12 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table(name = "users")
 public class User {
 
+    // in sync to Cognito user pool
     private String userId;
     private String email;
     private String phoneNumber;
     private String firstName;
     private String lastName;
     private Role role;
-    private boolean registered;
 
 }
