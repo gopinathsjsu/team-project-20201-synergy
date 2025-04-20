@@ -11,4 +11,5 @@ public interface BookingService {
 
     Map<LocalTime, Integer> getBookedCapacitiesForSlotsForRestaurant(int restaurantId, LocalDate reservationDate, List<LocalTime> timeSlots);
     String createBooking(BookingRequestDTO bookingRequestDTO);
+    String cancelBooking(int bookingId);
 }

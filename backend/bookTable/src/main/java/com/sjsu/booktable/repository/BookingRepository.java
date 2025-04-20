@@ -3,6 +3,7 @@ package com.sjsu.booktable.repository;
 import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.entity.Booking;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -13,4 +14,8 @@ public interface BookingRepository {
     Map<LocalTime, Integer> getBookedCapacityForTimeSlotsForRestaurant(int restaurantId, LocalDate reservationDate, List<LocalTime> timeSlots);
 
     String saveBooking(BookingRequestDTO bookingRequest);
+
+    int cancelBookingById(int bookingId);
+
+    Booking findBookingById(int bookingId);
 }

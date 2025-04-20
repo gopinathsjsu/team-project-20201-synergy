@@ -1,13 +1,12 @@
 package com.sjsu.booktable.model.dto.booking;
 
-import com.sjsu.booktable.model.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 public class BookingRequestDTO {
@@ -19,14 +18,14 @@ public class BookingRequestDTO {
     private String customerId;
 
     @NotNull
-    private Date bookingDate;
+    private LocalDate bookingDate;
 
     @NotNull
-    private Time bookingTime;
+    private LocalTime bookingTime;
 
     @NotNull
     private int partySize;
 
-//    private Timestamp createdAt;
-//    private Timestamp updatedAt;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 }

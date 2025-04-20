@@ -1,9 +1,11 @@
 package com.sjsu.booktable.repository;
 
+import com.sjsu.booktable.mappers.BookingRowMapper;
 import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.entity.Booking;
 import com.sjsu.booktable.model.enums.BookingStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -27,14 +29,30 @@ public class BookingRepositoryImpl implements BookingRepository {
     public String saveBooking(BookingRequestDTO bookingRequest) {
         int restaurantId = bookingRequest.getRestaurantId();
         String customerId = bookingRequest.getCustomerId();
-        Date bookingDate = bookingRequest.getBookingDate();
-        Time bookingTime = bookingRequest.getBookingTime();
+        Date bookingDate = Date.valueOf(bookingRequest.getBookingDate());
+        Time bookingTime = Time.valueOf(bookingRequest.getBookingTime());
         int partySize = bookingRequest.getPartySize();
         String status = BookingStatus.CONFIRMED.getStatus();
-        String insertBookingSql =  "INSERT INTO bookings (restaurant_id, customer_id, booking_date, booking_time, party_size) " +
-                "VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(insertBookingSql, restaurantId, customerId, bookingDate, bookingTime, partySize);
+        String insertBookingSql =  "INSERT INTO bookings (restaurant_id, customer_id, booking_date, booking_time, party_size, status) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(insertBookingSql, restaurantId, customerId, bookingDate, bookingTime, partySize, status);
         return "Booking created successfully";
+    }
+
+    @Override
+    public int cancelBookingById(int bookingId) {
+        String sqlSoftDeleteQuery = "UPDATE bookings SET status = ? WHERE id = ?";
+        return jdbcTemplate.update(sqlSoftDeleteQuery, BookingStatus.CANCELLED.getStatus(), bookingId);
+    }
+
+    @Override
+    public Booking findBookingById(int bookingId) {
+        String sql = "SELECT * FROM bookings WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), bookingId);
+        } catch (EmptyResultDataAccessException e) {
+            return null; // not found
+        }
     }
 
     @Override
