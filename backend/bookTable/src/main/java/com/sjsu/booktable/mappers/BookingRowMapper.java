@@ -13,7 +13,7 @@ public class BookingRowMapper implements RowMapper<Booking> {
         return Booking.builder()
                 .id(rs.getInt("id"))
                 .restaurantId(rs.getInt("restaurant_id"))
-                .customerId(rs.getInt("customer_id"))
+                .customerId(rs.getString("customer_id"))
                 .bookingDate(rs.getDate("booking_date"))
                 .bookingTime(rs.getTime("booking_time"))
                 .partySize(rs.getInt("party_size"))
