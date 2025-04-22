@@ -71,8 +71,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public int addRestaurantDetails(RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl, String managerId) {
-        String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?)";
+        String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id, deleted)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, false)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
