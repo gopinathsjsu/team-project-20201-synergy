@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
+import useRouteNavigate from "@/hooks/routeNavigate";
 
 export const AuthContext = createContext();
 
@@ -8,6 +9,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { handleRouteChange } = useRouteNavigate();
 
   useEffect(() => {
     (async function checkAuth() {
@@ -34,6 +36,7 @@ function AuthProvider({ children }) {
         { withCredentials: true }
       );
       setIsLoggedIn(false);
+      handleRouteChange("/");
     } catch (err) {
       console.log("error while logging out", err);
     }

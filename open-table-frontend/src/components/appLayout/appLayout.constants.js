@@ -41,3 +41,5 @@ const BASE_NAV_ITEMS = [HOME, BOOKING, PROFILE];
 
 export const LOGGED_IN_NAV_ITEMS = [...BASE_NAV_ITEMS, LOGOUT];
 export const LOGGED_OUT_NAV_ITEMS = [LOGIN];
+
+export const PROTECTED_ROUTES = [BOOKING.path, PROFILE.path];
