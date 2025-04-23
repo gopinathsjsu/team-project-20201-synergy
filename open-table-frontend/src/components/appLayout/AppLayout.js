@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 
 /* Material UI */
 import AppBar from "@mui/material/AppBar";
@@ -17,6 +17,7 @@ import cx from "classnames";
 
 /* Hooks */
 import useRouteNavigate from "@/hooks/routeNavigate";
+import { useRouter } from "next/router";
 
 /* Constants */
 import {
@@ -30,10 +31,13 @@ import {
 import styles from "./appLayout.module.scss";
 import AuthModal from "@/components/authModal";
 import { AuthContext } from "@/AuthContext/AuthContext";
+import { PROTECTED_ROUTES } from "./appLayout.constants";
 
 function AppLayout({ children }) {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const { handleRouteChange } = useRouteNavigate();
+  const router = useRouter();
+  const [checkedAuth, setCheckedAuth] = useState(false);
 
   const { isLoggedIn } = useContext(AuthContext);
 
@@ -58,6 +62,18 @@ function AppLayout({ children }) {
   const handleLoginClick = () => {
     // trigger login modal state
   };
+
+  useEffect(() => {
+    const pathIsProtected = PROTECTED_ROUTES.includes(router.pathname);
+
+    if (pathIsProtected && !isLoggedIn) {
+      router.replace("/");
+    } else {
+      setCheckedAuth(true);
+    }
+  }, [router.pathname, isLoggedIn, router]);
+
+  if (!checkedAuth && PROTECTED_ROUTES.includes(router.pathname)) return null;
 
   return (
     <>
