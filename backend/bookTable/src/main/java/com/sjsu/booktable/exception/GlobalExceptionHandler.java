@@ -33,7 +33,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<BTResponse<String>> handleInvalidRequest(InvalidRequestException ex) {
-        return ResponseEntity.status(ex.getStatus()).body(BTResponse.failure(ex.getMessage()));
+        return ResponseEntity.status(ex.getStatus()).body(BTResponse.
+                failure(ex.getMessage()));
     }
 
     @ExceptionHandler(OtpSendFailedException.class)
