@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/* Here rowmapper is used to map the result set to the restaurant(ENTITY) object */
 public class RestaurantRowMapper implements RowMapper<Restaurant> {
 
     @Override

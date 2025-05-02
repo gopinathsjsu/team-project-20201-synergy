@@ -15,7 +15,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
-import java.time.LocalDateTime;
 
 @Repository
 public class RestaurantRepositoryImpl implements RestaurantRepository {
@@ -32,47 +31,9 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     }
 
     @Override
-    public List<Restaurant> findByApproved(boolean approved) {
-        String sql = "SELECT * FROM restaurants WHERE approved = ? AND deleted = false";
-        return this.jdbcTemplate.query(sql, new RestaurantRowMapper(), approved);
-    }
-
-    @Override
-    public void updateRestaurant(Restaurant restaurant) {
-        String sql = "UPDATE restaurants SET approved = ? WHERE id = ?";
-        jdbcTemplate.update(sql, restaurant.isApproved(), restaurant.getId());
-    }
-
-    @Override
-    public void deleteById(int id) {
-        String sql = "UPDATE restaurants SET deleted = ? WHERE id = ?";
-        jdbcTemplate.update(sql, true, id);
-    }
-
-    @Override
-    public List<Restaurant> getMostPopularRestaurants(LocalDateTime startDate, LocalDateTime endDate) {
-        String sql = """
-            SELECT r.* FROM restaurants r 
-            JOIN bookings b ON r.id = b.restaurant_id 
-            WHERE b.booking_time BETWEEN ? AND ?
-            AND r.deleted = false
-            GROUP BY r.id 
-            ORDER BY COUNT(b.id) DESC 
-            LIMIT 10
-            """;
-        return jdbcTemplate.query(sql, new RestaurantRowMapper(), startDate, endDate);
-    }
-
-    @Override
-    public int getTotalReservations(LocalDateTime startDate, LocalDateTime endDate) {
-        String sql = "SELECT COUNT(*) FROM bookings WHERE booking_time BETWEEN ? AND ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, startDate, endDate);
-    }
-
-    @Override
     public int addRestaurantDetails(RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl, String managerId) {
-        String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id, deleted)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, false)";
+        String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -111,6 +72,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText) {
+        // Build the SQL query dynamically.
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
         sql.append("ST_Distance_Sphere(location, POINT(?, ?)) AS distance ");
@@ -138,9 +100,4 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         return this.jdbcTemplate.query(sql, new RestaurantSearchRowMapper(), managerId);
     }
 
-    @Override
-    public List<Restaurant> findAllNonDeleted() {
-        String sql = "SELECT * FROM restaurants WHERE deleted = false";
-        return this.jdbcTemplate.query(sql, new RestaurantRowMapper());
-    }
 }
