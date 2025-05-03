@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import { useState } from "react";
 import { useNearbySuggestions } from "@/hooks/useNearbySuggestions";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const DISPLAY_MODE = {
   SUGGESTIONS: "suggestions",
@@ -18,12 +19,18 @@ function Home(props) {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [searchPayload, setSearchPayload] = useState({
+    date: dayjs().format("YYYY-DD-MM"),
+    time: "20:00",
+    partySize: 2,
+  });
 
   const { suggestions, isLoading, error, locationError } =
     useNearbySuggestions();
 
   const handleSearchSubmit = async (searchPayload) => {
     // console.log("Search triggered with form data:", searchPayload);
+    setSearchPayload(searchPayload);
     setIsSearchLoading(true);
     setSearchError(null);
     setSearchResults([]);
@@ -31,8 +38,10 @@ function Home(props) {
     // call search API
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/home/restaurants/search`;
     try {
-      const response = await axios.post(url, searchPayload);
-      const restaurantList = response?.data?.data;
+      const response = await axios.post(url, searchPayload, {
+        withCredentials: true,
+      });
+      const restaurantList = response?.data?.data?.restaurantSearchDetails;
       setSearchResults(restaurantList);
       setDisplayMode(DISPLAY_MODE.RESULTS);
     } catch (err) {
@@ -40,6 +49,10 @@ function Home(props) {
       setSearchError(err.message);
     }
     setIsSearchLoading(false);
+  };
+
+  const handleSearchPayload = (searchPayload) => {
+    setSearchPayload(searchPayload);
   };
 
   const loader = (
@@ -50,18 +63,27 @@ function Home(props) {
 
   return (
     <div>
-      <ReservationForm onSearchSubmit={handleSearchSubmit} />
+      <ReservationForm
+        onSearchSubmit={handleSearchSubmit}
+        onSearchChange={handleSearchPayload}
+      />
       <Divider />
       {displayMode === DISPLAY_MODE.SUGGESTIONS ? (
         isLoading ? (
           loader
         ) : (
-          <NearbySuggestion restaurantList={suggestions} />
+          <NearbySuggestion
+            restaurantList={suggestions}
+            searchPayload={searchPayload}
+          />
         )
       ) : isSearchLoading ? (
         loader
       ) : (
-        <SearchResult restaurantList={searchResults} />
+        <SearchResult
+          restaurantList={searchResults}
+          searchPayload={searchPayload}
+        />
       )}
     </div>
   );

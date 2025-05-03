@@ -33,9 +33,9 @@ export const handleOTPSend = async (
     const response = await axios.post(url, req, { withCredentials: true });
     const resData = response?.data?.data;
     console.log("OTP sent successfully...");
-    setIsLoading(false);
     onChangeCurrentView({ ...req, ...resData });
   } catch (error) {
     console.log(error);
   }
+  setIsLoading(false);
 };
