@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 
 const LOCATION_ERROR_TYPE = {
@@ -7,20 +8,6 @@ const LOCATION_ERROR_TYPE = {
   NOT_SUPPORTED: "not_supported",
   UNKNOWN: "unknown",
 };
-
-const data = [
-  { id: 1, name: "Restaurant 1", description: "Description 1" },
-  { id: 2, name: "Restaurant 2", description: "Description 2" },
-  { id: 3, name: "Restaurant 3", description: "Description 3" },
-  { id: 4, name: "Restaurant 3", description: "Description 3" },
-  { id: 5, name: "Restaurant 3", description: "Description 3" },
-  { id: 6, name: "Restaurant 3", description: "Description 3" },
-  { id: 7, name: "Restaurant 3", description: "Description 3" },
-  { id: 8, name: "Restaurant 3", description: "Description 3" },
-  { id: 9, name: "Restaurant 3", description: "Description 3" },
-  { id: 10, name: "Restaurant 3", description: "Description 3" },
-  // Add more items as needed
-];
 
 function useNearbySuggestions(props) {
   const [suggestions, setSuggestions] = useState(null);
@@ -35,31 +22,17 @@ function useNearbySuggestions(props) {
       setError(null);
 
       try {
-        // const apiEndpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/customer/restaurants/search`;
-        // const requestBody = locationCoords
-        //   ? JSON.stringify({
-        //       lat: locationCoords.latitude,
-        //       lng: locationCoords.longitude,
-        //     })
-        //   : null;
+        const apiEndpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/home/restaurants/nearby`;
+        const requestBody = locationCoords
+          ? {
+              latitude: locationCoords.latitude,
+              longitude: locationCoords.longitude,
+            }
+          : null;
 
-        // const response = await fetch(apiEndpoint, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: requestBody,
-        // });
+        const response = await axios.post(apiEndpoint, requestBody);
 
-        // if (!response.ok) {
-        //   const errorData = await response.json();
-        //   throw new Error(
-        //     errorData.message ||
-        //       `Failed to fetch suggestions (HTTP status: ${response.status})`
-        //   );
-        // }
-
-        // const data = await response.json();
+        const data = response.data?.data?.restaurantSearchDetails;
         setSuggestions(data || []);
         setIsLoading(false);
       } catch (err) {

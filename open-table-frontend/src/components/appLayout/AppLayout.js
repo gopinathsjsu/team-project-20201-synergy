@@ -34,12 +34,12 @@ import { AuthContext } from "@/AuthContext/AuthContext";
 import { PROTECTED_ROUTES } from "./appLayout.constants";
 
 function AppLayout({ children }) {
-  const [openLoginModal, setOpenLoginModal] = useState(false);
   const { handleRouteChange } = useRouteNavigate();
   const router = useRouter();
   const [checkedAuth, setCheckedAuth] = useState(false);
 
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, handleLogout, openLoginModal, setOpenLoginModal } =
+    useContext(AuthContext);
 
   const handleLoginModalClose = () => {
     setOpenLoginModal(false);
@@ -52,15 +52,10 @@ function AppLayout({ children }) {
 
   const handleNavClick = (navItemId, path) => {
     if (navItemId === LOGIN.id) {
-      // handleLoginClick()
       setOpenLoginModal(true);
     } else if (navItemId === LOGOUT.id) {
-      // handleLogoutClick()
+      handleLogout();
     } else handleRouteChange(path);
-  };
-
-  const handleLoginClick = () => {
-    // trigger login modal state
   };
 
   useEffect(() => {

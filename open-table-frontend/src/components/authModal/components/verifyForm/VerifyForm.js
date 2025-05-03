@@ -22,6 +22,7 @@ function VerifyForm({ onClose, loginData }) {
   const [isVerifyLoading, setVerifyLoading] = useState(false);
 
   const handleChange = (e) => {
+    setError("");
     const inputValue = e.target?.value;
     if (_trim(inputValue)) {
       setVerificationCode(inputValue);
@@ -31,11 +32,11 @@ function VerifyForm({ onClose, loginData }) {
   const handleSubmit = async (e) => {
     const req = { ...loginData, otp: verificationCode };
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/otp/verify`;
+    setVerifyLoading(true);
     try {
       await axios.post(url, req, { withCredentials: true });
       // loggedIn successful snackbar
       setSnackbarMessage("Logged In successfully");
-      setVerifyLoading(false);
       onClose();
       setIsLoggedIn(true);
     } catch (err) {
@@ -45,7 +46,28 @@ function VerifyForm({ onClose, loginData }) {
       setError("Verification failed, Retry!");
     } finally {
       setOpenSnackbar(true);
+      setVerifyLoading(false);
     }
+  };
+
+  const handleResendCode = async () => {
+    setError("");
+    const { identifier, value } = loginData;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/otp/send`;
+    const req = {
+      identifier,
+      value,
+    };
+    setVerifyLoading(true);
+    try {
+      const response = await axios.post(url, req);
+      console.log("OTP sent successfully...");
+      setSnackbarMessage("OTP sent!!");
+    } catch (error) {
+      console.log(error);
+    }
+    setOpenSnackbar(true);
+    setVerifyLoading(false);
   };
 
   const onCloseSnackbar = () => {
@@ -90,7 +112,7 @@ function VerifyForm({ onClose, loginData }) {
           </Button>
           <div className="flex-center">
             <Typography variant="caption">{`Didn't receive a code?`}</Typography>
-            <Button size="small" onClick={handleSubmit}>
+            <Button size="small" onClick={handleResendCode}>
               <Typography
                 sx={{ textDecoration: "underline" }}
                 textTransform="none"
