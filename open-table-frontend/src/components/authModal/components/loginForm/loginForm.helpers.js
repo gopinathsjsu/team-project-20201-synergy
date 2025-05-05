@@ -10,19 +10,32 @@ export const validateEmailFormat = (email) => {
   return regex.test(email);
 };
 
-export const handleOTPSend = async ({
-  verificationType,
-  verificationInput,
-  onChangeCurrentView,
-}) => {
+const testApi = () => {
+  return new Promise((response, reject) => {
+    setTimeout(() => {
+      response("API response");
+    }, 500);
+  });
+};
+
+export const handleOTPSend = async (
+  setIsLoading,
+  { verificationType, verificationInput, onChangeCurrentView }
+) => {
   const req = {
     identifier: verificationType,
     value: verificationInput,
   };
 
+  const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/otp/send`;
+
   try {
-    // await axios.post(url, data);
-    // console.log("OTP sent successfully...");
-    onChangeCurrentView("verify");
-  } catch (error) {}
+    const response = await axios.post(url, req);
+    const resData = response?.data?.data;
+    console.log("OTP sent successfully...");
+    setIsLoading(false);
+    onChangeCurrentView({ ...req, ...resData });
+  } catch (error) {
+    console.log(error);
+  }
 };
