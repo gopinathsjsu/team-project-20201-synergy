@@ -1,15 +1,11 @@
 package com.sjsu.booktable.controller;
 
 import com.sjsu.booktable.model.dto.BTResponse;
-import com.sjsu.booktable.model.dto.restaurant.RestaurantResponse;
-import com.sjsu.booktable.service.AdminService;
+import com.sjsu.booktable.service.admin.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")

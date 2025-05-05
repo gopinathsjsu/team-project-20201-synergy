@@ -1,4 +1,4 @@
-package com.sjsu.booktable.service;
+package com.sjsu.booktable.service.admin;
 
 import com.sjsu.booktable.model.dto.restaurant.RestaurantResponse;
 import java.util.List;
