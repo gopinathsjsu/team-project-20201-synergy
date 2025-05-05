@@ -12,9 +12,12 @@ function AuthProvider({ children }) {
   useEffect(() => {
     (async function checkAuth() {
       try {
-        const res = await axios.get(`${BASE_URL}/api/auth/status`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/status`,
+          {
+            withCredentials: true,
+          }
+        );
         const { loggedIn } = res?.data?.data;
         setIsLoggedIn(loggedIn);
       } catch (err) {

@@ -5,6 +5,12 @@ import VerifyForm from "./components/verifyForm";
 
 function AuthModal({ isOpen, onClose }) {
   const [currentView, setCurrentView] = useState("login");
+  const [loginData, setLoginData] = useState({});
+
+  const onCurrentChangeView = (loginData) => {
+    setLoginData(loginData);
+    setCurrentView("verify");
+  };
 
   return (
     <Dialog
@@ -24,9 +30,12 @@ function AuthModal({ isOpen, onClose }) {
       }}
     >
       {currentView === "login" ? (
-        <LoginForm onClose={onClose} onChangeCurrentView={setCurrentView} />
+        <LoginForm
+          onClose={onClose}
+          onChangeCurrentView={onCurrentChangeView}
+        />
       ) : (
-        <VerifyForm onClose={onClose} />
+        <VerifyForm onClose={onClose} loginData={loginData} />
       )}
     </Dialog>
   );
