@@ -29,7 +29,8 @@ function AdminDashboard() {
       try {
         const response = await axios.get(`${BASE_URL}/api/admin/analytics/reservations`, {
           withCredentials: true, // Important to send cookies for authentication
-        });
+        }
+      );
 
         // Check if the response structure is as expected (BTResponse)
         if (response.data && response.data.status === 'success') {
