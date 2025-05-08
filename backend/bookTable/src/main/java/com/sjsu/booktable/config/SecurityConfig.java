@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// Import the Role enum
 import static com.sjsu.booktable.model.enums.Role.*;
 
 @Configuration
@@ -24,47 +25,53 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(CsrfConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        http.csrf(CsrfConfigurer::disable) // Disable CSRF protection
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Use stateless sessions
+                // --- Original Security Rules ---
                 .authorizeHttpRequests(auth -> auth
                         // Allow OPTIONS requests for CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Public endpoints
+                        // Public endpoints (Login/OTP flow)
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Protected endpoints
+                        // Protected endpoints based on Role
                         .requestMatchers("/api/customer/**").hasAuthority(CUSTOMER.getName())
                         .requestMatchers("/api/manager/**").hasAuthority(RESTAURANT_MANAGER.getName())
                         .requestMatchers("/api/admin/**").hasAuthority(ADMIN.getName())
-                        // All other requests require authentication
+                        // All other requests require authentication (catch-all)
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-                        .bearerTokenResolver(request -> {
-                            // Skip token resolution for public endpoints
+                // --- End of Original Security Rules ---
+                .oauth2ResourceServer(oauth2 -> oauth2 // Configure as OAuth2 Resource Server
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())) // Use custom JWT converter
+                        .bearerTokenResolver(request -> { // Define how to find the token
+                            // Skip token resolution for public auth endpoints or OPTIONS requests
                             String path = request.getServletPath();
-                            if (path.startsWith("/api/auth/otp") || "OPTIONS".equals(request.getMethod())) {
-                                return null;
+                            if (path.startsWith("/api/auth/") || HttpMethod.OPTIONS.matches(request.getMethod())) {
+                                return null; // Don't look for a token
                             }
-                            // Extract token from cookie for protected endpoints
+                            // Extract token from 'api-token' cookie for other requests
                             if (request.getCookies() != null) {
                                 for (Cookie cookie : request.getCookies()) {
                                     if ("api-token".equals(cookie.getName())) {
-                                        return cookie.getValue();
+                                        return cookie.getValue(); // Return token value if found
                                     }
                                 }
                             }
+                            // Return null if token cookie not found
                             return null;
                         })
                 );
-        return http.build();
+        return http.build(); // Build the security filter chain
     }
 
+    // Bean to configure how roles/authorities are extracted from the JWT
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        // Look for the 'cognito:groups' claim in the JWT
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             List<String> groups = jwt.getClaimAsStringList("cognito:groups");
+            // Map Cognito groups (like 'Admin', 'Customer') to Spring Security Authorities
             return groups != null ? groups.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList()) : Collections.emptyList();
