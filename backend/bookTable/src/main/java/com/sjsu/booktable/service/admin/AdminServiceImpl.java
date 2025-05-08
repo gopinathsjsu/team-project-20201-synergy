@@ -1,9 +1,8 @@
-package com.sjsu.booktable.service.impl;
+package com.sjsu.booktable.service.admin;
 
 import com.sjsu.booktable.model.dto.restaurant.RestaurantResponse;
 import com.sjsu.booktable.model.entity.Restaurant;
 import com.sjsu.booktable.repository.RestaurantRepository;
-import com.sjsu.booktable.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -20,10 +20,11 @@ import styles from "./reservationForm.module.scss";
 
 const MAX_PERSONS = 20;
 
-function ReservationForm(props) {
+function ReservationForm({ onSearchSubmit }) {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [selectedTime, setSelectedTime] = useState(dayjs());
-  const [restaurantList, setRestaurantList] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [personCount, setPersonCount] = useState(2);
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -33,13 +34,34 @@ function ReservationForm(props) {
     setSelectedTime(newTime);
   };
 
-  const handleLocationChange = async (e, newValue) => {
-    const newRestaurantList = await fetchRestaurantList(newValue);
-    setRestaurantList(newRestaurantList);
+  const handleLocationChange = (place) => {
+    setSelectedLocation(place);
   };
 
   const disablePastDates = (date) => {
     return date < new Date(new Date().setHours(0, 0, 0, 0));
+  };
+
+  const handlePersonCount = (e) => {
+    const totalPerson = e.target.value;
+    setPersonCount(totalPerson);
+  };
+
+  const handleReservationSubmit = () => {
+    if (!selectedLocation) return null;
+    const formattedSelectedDate = selectedDate.format("YYYY-MM-DD");
+    const formattedSelectedTime = selectedTime.format("HH:mm:ss");
+    const lat = selectedLocation?.geometry?.location?.lat();
+    const lng = selectedLocation?.geometry?.location?.lng();
+    const req = {
+      date: formattedSelectedDate,
+      time: formattedSelectedTime,
+      partySize: personCount,
+      latitude: lat,
+      longitude: lng,
+    };
+    // const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/customer/restaurants/search`;
+    onSearchSubmit(req);
   };
 
   return (
@@ -68,6 +90,8 @@ function ReservationForm(props) {
             select
             label="Choose total person"
             defaultValue={2}
+            onChange={handlePersonCount}
+            value={personCount}
           >
             {Array(MAX_PERSONS)
               .fill(0)
@@ -80,35 +104,12 @@ function ReservationForm(props) {
                   )
               )}
           </TextField>
-          {/* <Autocomplete
-            freeSolo
-            sx={{ width: 250 }}
-            options={[]}
-            onChange={
-              handleLocationChange
-            }
-            onInputChange={
-              handleLocationChange
-            }
-            renderInput={(params) => (
-              <TextField
-                label="Choose Location, Restaurant or Cuisine"
-                placeholder="Location, Restaurant or Cuisine"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LocationOnIcon />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                {...params}
-              />
-            )}
-          /> */}
-          <PlacesAutocomplete />
-          <Button variant="contained" endIcon={<SendSharpIcon />}>
+          <PlacesAutocomplete onLocationChange={handleLocationChange} />
+          <Button
+            onClick={handleReservationSubmit}
+            variant="contained"
+            endIcon={<SendSharpIcon />}
+          >
             <Typography>Let&apos;s&nbsp;Go</Typography>
           </Button>
         </Box>

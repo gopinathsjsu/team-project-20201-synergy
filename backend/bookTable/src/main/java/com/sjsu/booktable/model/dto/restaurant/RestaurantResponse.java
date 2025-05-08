@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class RestaurantResponse {
-
     private int id;
     private String name;
     private String cuisineType;
@@ -20,5 +19,4 @@ public class RestaurantResponse {
     private String country;
     private String mainPhotoUrl;
     private boolean approved;
-
 }

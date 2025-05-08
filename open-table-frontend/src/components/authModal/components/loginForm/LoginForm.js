@@ -30,6 +30,7 @@ function LoginForm({ onClose, onChangeCurrentView }) {
   const [verificationInput, setVerificationInput] = useState("");
   const [validationError, setValidationError] = useState("");
   const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+  const [isCtaLoading, setIsCtaLoading] = useState(false);
 
   const currentVerificationConfig = useMemo(
     () => VERIFICATION_CONFIG[verificationType],
@@ -58,7 +59,8 @@ function LoginForm({ onClose, onChangeCurrentView }) {
       setValidationError("");
       console.log("Submitted phone number:", verificationInput);
       // Proceed with form submission logic
-      handleOTPSend({
+      setIsCtaLoading(true);
+      handleOTPSend(setIsCtaLoading, {
         verificationType,
         verificationInput,
         onChangeCurrentView,
@@ -113,6 +115,7 @@ function LoginForm({ onClose, onChangeCurrentView }) {
             className={styles.continueCta}
             onClick={handleSubmit}
             size="large"
+            loading={isCtaLoading}
           >
             <Typography
               textTransform="none"
