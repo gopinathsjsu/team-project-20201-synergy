@@ -168,4 +168,19 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         String sql = "SELECT * FROM restaurants WHERE deleted = false";
         return this.jdbcTemplate.query(sql, new RestaurantRowMapper());
     }
+
+    @Override
+    public List<RestaurantSearchDetails> findNearbyRestaurants(double longitude, double latitude, int radiusInKm) {
+        int radiusInMeters = radiusInKm * 1000;
+
+        String sql = "SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, " +
+                "ST_Distance_Sphere(location, POINT(?, ?)) AS distance " +
+                "FROM restaurants " +
+                "WHERE approved = TRUE AND deleted = FALSE " +
+                "AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? " +
+                "ORDER BY distance ";
+
+        Object[] params = {longitude, latitude, longitude, latitude, radiusInMeters};
+        return jdbcTemplate.query(sql, new RestaurantSearchRowMapper(), params);
+    }
 }

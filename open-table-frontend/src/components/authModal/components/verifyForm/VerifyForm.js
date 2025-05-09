@@ -32,7 +32,7 @@ function VerifyForm({ onClose, loginData }) {
     const req = { ...loginData, otp: verificationCode };
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/otp/verify`;
     try {
-      await axios.post(url, req);
+      await axios.post(url, req, { withCredentials: true });
       // loggedIn successful snackbar
       setSnackbarMessage("Logged In successfully");
       setVerifyLoading(false);

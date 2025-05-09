@@ -42,7 +42,6 @@ public class AuthController {
             // Set access token in HTTP-only cookie
             Cookie tokenCookie = new Cookie("api-token", verifyResponse.getAccessToken());
             tokenCookie.setHttpOnly(true);
-            tokenCookie.setSecure(true);
             tokenCookie.setPath("/"); // Cookie available for all routes
             tokenCookie.setMaxAge(10800); // Match token expiry, e.g., 3 hour
             response.addCookie(tokenCookie);
