@@ -221,7 +221,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .build();
         } catch (Exception e) {
             log.error("Error while finding nearby restaurants: ", e);
-            throw e;
+            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
