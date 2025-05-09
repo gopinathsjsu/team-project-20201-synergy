@@ -30,6 +30,8 @@ public interface RestaurantRepository {
 
     List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText);
 
+    List<RestaurantSearchDetails> findNearbyRestaurants(double longitude, double latitude, int radiusInKm);
+
     List<RestaurantSearchDetails> findByManagerId(String managerId);
 
 }
