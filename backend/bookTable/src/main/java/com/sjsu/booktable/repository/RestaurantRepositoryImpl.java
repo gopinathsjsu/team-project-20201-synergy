@@ -28,7 +28,11 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public Restaurant findById(int id) {
-        String sql = "SELECT * FROM restaurants WHERE id = ? AND deleted = FALSE";
+        String sql = "SELECT id, name, cuisine_type, cost_rating, description, contact_phone, " +
+                "address_line, city, state, zip_code, country, " +
+                "ST_X(location) as longitude, ST_Y(location) as latitude, " +
+                "main_photo_url, created_at, updated_at, approved, manager_id, deleted " +
+                "FROM restaurants WHERE id = ?";
         try {
             return this.jdbcTemplate.queryForObject(sql, new RestaurantRowMapper(), id);
         } catch (org.springframework.dao.EmptyResultDataAccessException e) {

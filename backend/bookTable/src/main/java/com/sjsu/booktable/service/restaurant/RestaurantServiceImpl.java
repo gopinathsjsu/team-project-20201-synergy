@@ -234,6 +234,14 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<HoursDto> hours = restaurantHoursService.getHoursForRestaurant(restaurantId);
         List<TimeSlotDto> timeSlots = timeSlotService.getTimeSlotsForRestaurant(restaurantId);
 
+        // Extract coordinates safely handling null locations
+        Double longitude = null;
+        Double latitude = null;
+        if (restaurant.getLocation() != null) {
+            longitude = restaurant.getLocation().getX();
+            latitude = restaurant.getLocation().getY();
+        }
+
         return RestaurantDetailsResponse.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
@@ -246,6 +254,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .state(restaurant.getState())
                 .zipCode(restaurant.getZipCode())
                 .country(restaurant.getCountry())
+                .longitude(longitude)
+                .latitude(latitude)
                 .mainPhotoUrl(restaurant.getMainPhotoUrl())
                 .additionalPhotoUrls(additionalPhotoUrls)
                 .tableConfigurations(tableConfigurations)

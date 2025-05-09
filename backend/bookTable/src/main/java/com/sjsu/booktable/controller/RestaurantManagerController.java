@@ -68,24 +68,6 @@ public class RestaurantManagerController {
         return ResponseEntity.ok(BTResponse.success(response));
     }
 
-    @PostMapping("/presigned-url/batch")
-    @PreAuthorize("hasAuthority('RestaurantManager')")
-    public ResponseEntity getBatchPresignedUrls(@RequestBody List<String> keys,
-                                                @RequestParam(required = false, defaultValue = "10") int expiration) {
-        try {
-            Map<String, URL> urls = keys.stream()
-                    .collect(Collectors.toMap(
-                            key -> key,
-                            key -> s3Service.generatePresignedGetUrl(key, expiration)
-                    ));
-            return ResponseEntity.ok(BTResponse.success(urls));
-        } catch (Exception e) {
-            log.error("error with presigned url generation: ", e);
-            return ResponseEntity.internalServerError().body(BTResponse.failure("Error generating pre-signed URLs"));
-        }
-
-    }
-
     /**
      * Generates a pre-signed URL for uploading a file via HTTP PUT.
      * The UI should call this endpoint before uploading a file directly to S3.
