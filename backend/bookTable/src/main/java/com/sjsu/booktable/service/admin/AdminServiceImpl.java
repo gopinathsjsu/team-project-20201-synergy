@@ -13,14 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/*@Service - Spring annotation marking this as a service class */
 @Service
 @Slf4j
 public class AdminServiceImpl implements AdminService {
 
-    /*Injects the RestaurantRepository dependency
-    This is how we access the database
-     */
+
     @Autowired
     private RestaurantRepository restaurantRepository;
 
