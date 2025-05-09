@@ -157,6 +157,51 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    public RestaurantSearchResponse getNearbyRestaurants(NearbyRestaurantRequest request) {
+        try {
+            List<RestaurantSearchDetails> nearbyRestaurants = restaurantRepository.findNearbyRestaurants(
+                    request.getLongitude(), request.getLatitude(), request.getRadius());
+
+            List<RestaurantSearchDetails> availableRestaurants = new ArrayList<>();
+
+            for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
+                int restaurantId = nearbyRestaurant.getId();
+                LocalDate currentDate = LocalDate.now();
+                int dayOfWeek = currentDate.getDayOfWeek().getValue() % 7;
+                LocalTime currentTime = LocalTime.now();
+
+                boolean withinHours = isWithinOperatingHours(restaurantId, currentTime, dayOfWeek);
+                if (!withinHours) {
+                    continue;
+                }
+
+                List<LocalTime> matchingSlots = getMatchingTimeSlots(restaurantId, dayOfWeek, currentTime);
+
+                if (matchingSlots.isEmpty()) {
+                    continue;
+                }
+
+                List<String> availableTimeSlots = getAvailableTimeSlots(restaurantId, currentDate, matchingSlots, 1);
+
+                if (availableTimeSlots.isEmpty()) {
+                    continue;
+                }
+
+                nearbyRestaurant.setAvailableTimeSlots(availableTimeSlots);
+                availableRestaurants.add(nearbyRestaurant);
+            }
+
+            return RestaurantSearchResponse.builder()
+                    .count(availableRestaurants.size())
+                    .restaurantSearchDetails(availableRestaurants)
+                    .build();
+        } catch(Exception e){
+            log.error("Error while finding nearby restaurants: ", e);
+            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
     public RestaurantSearchResponse fetchRestaurantsByManager(String managerId) {
         if(StringUtils.isBlank(managerId)) {
             throw new InvalidRequestException("Manager id cannot be null or empty");
@@ -207,22 +252,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .timeSlots(timeSlots)
                 .approved(restaurant.isApproved())
                 .build();
-    }
-
-    @Override
-    public RestaurantSearchResponse getNearbyRestaurants(NearbyRestaurantRequest request) {
-        try {
-            List<RestaurantSearchDetails> nearbyRestaurants = restaurantRepository.findNearbyRestaurants(
-                    request.getLongitude(), request.getLatitude(), request.getRadius());
-
-            return RestaurantSearchResponse.builder()
-                    .count(nearbyRestaurants.size())
-                    .restaurantSearchDetails(nearbyRestaurants)
-                    .build();
-        } catch (Exception e) {
-            log.error("Error while finding nearby restaurants: ", e);
-            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     private int saveRestaurantDetails(RestaurantRequest request, double[] coords, String mainPhotoUrl, String managerId) {
