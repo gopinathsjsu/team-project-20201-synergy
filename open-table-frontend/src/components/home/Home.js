@@ -29,7 +29,7 @@ function Home(props) {
     setSearchResults([]);
 
     // call search API
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/customer/restaurants/search`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/home/restaurants/search`;
     try {
       const response = await axios.post(url, searchPayload);
       const restaurantList = response?.data?.data;
