@@ -117,13 +117,13 @@ public class RestaurantServiceImpl implements RestaurantService {
                     searchRequest.getLongitude(), searchRequest.getLatitude(), searchRequest.getSearchText());
 
             List<RestaurantSearchDetails> availableRestaurants = new ArrayList<>();
+            LocalDate resDate = searchRequest.getDate();
+            int dayOfWeek = resDate.getDayOfWeek().getValue() % 7;
+            LocalTime resTime = searchRequest.getTime();
+            int partySize = searchRequest.getPartySize();
 
             for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
                 int restaurantId = nearbyRestaurant.getId();
-                LocalDate resDate = searchRequest.getDate();
-                int dayOfWeek = resDate.getDayOfWeek().getValue() % 7;
-                LocalTime resTime = searchRequest.getTime();
-                int partySize = searchRequest.getPartySize();
 
                 boolean withinHours = isWithinOperatingHours(restaurantId, resTime, dayOfWeek);
                 if (!withinHours) {
@@ -164,11 +164,12 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             List<RestaurantSearchDetails> availableRestaurants = new ArrayList<>();
 
+            LocalDate currentDate = LocalDate.now();
+            int dayOfWeek = currentDate.getDayOfWeek().getValue() % 7;
+            LocalTime currentTime = LocalTime.now();
+
             for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
                 int restaurantId = nearbyRestaurant.getId();
-                LocalDate currentDate = LocalDate.now();
-                int dayOfWeek = currentDate.getDayOfWeek().getValue() % 7;
-                LocalTime currentTime = LocalTime.now();
 
                 boolean withinHours = isWithinOperatingHours(restaurantId, currentTime, dayOfWeek);
                 if (!withinHours) {
