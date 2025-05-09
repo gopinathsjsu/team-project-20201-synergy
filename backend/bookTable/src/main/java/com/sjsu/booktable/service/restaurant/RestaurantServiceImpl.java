@@ -3,6 +3,7 @@ package com.sjsu.booktable.service.restaurant;
 import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.restaurant.RestaurantException;
 import com.sjsu.booktable.model.dto.restaurant.*;
+import com.sjsu.booktable.model.dto.restaurantSearch.NearbyRestaurantRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchResponse;
@@ -206,6 +207,22 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .timeSlots(timeSlots)
                 .approved(restaurant.isApproved())
                 .build();
+    }
+
+    @Override
+    public RestaurantSearchResponse getNearbyRestaurants(NearbyRestaurantRequest request) {
+        try {
+            List<RestaurantSearchDetails> nearbyRestaurants = restaurantRepository.findNearbyRestaurants(
+                    request.getLongitude(), request.getLatitude(), request.getRadius());
+
+            return RestaurantSearchResponse.builder()
+                    .count(nearbyRestaurants.size())
+                    .restaurantSearchDetails(nearbyRestaurants)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error while finding nearby restaurants: ", e);
+            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private int saveRestaurantDetails(RestaurantRequest request, double[] coords, String mainPhotoUrl, String managerId) {

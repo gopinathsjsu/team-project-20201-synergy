@@ -1,15 +1,13 @@
 package com.sjsu.booktable.controller;
 
 import com.sjsu.booktable.model.dto.BTResponse;
+import com.sjsu.booktable.model.dto.restaurantSearch.NearbyRestaurantRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchRequest;
 import com.sjsu.booktable.service.restaurant.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/home")
@@ -23,4 +21,8 @@ public class HomePageController {
         return ResponseEntity.ok(BTResponse.success(restaurantService.searchRestaurants(restaurantSearchRequest)));
     }
 
+    @PostMapping("/restaurants/nearby")
+    public ResponseEntity getNearbyRestaurants(@RequestBody @Valid NearbyRestaurantRequest request){
+        return ResponseEntity.ok(BTResponse.success(restaurantService.getNearbyRestaurants(request)));
+    }
 }
