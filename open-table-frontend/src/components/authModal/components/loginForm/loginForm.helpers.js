@@ -30,7 +30,7 @@ export const handleOTPSend = async (
   const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/otp/send`;
 
   try {
-    const response = await axios.post(url, req);
+    const response = await axios.post(url, req, { withCredentials: true });
     const resData = response?.data?.data;
     console.log("OTP sent successfully...");
     setIsLoading(false);
