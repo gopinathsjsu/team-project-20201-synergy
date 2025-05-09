@@ -30,7 +30,7 @@ public class SecurityConfig {
                         // Allow OPTIONS requests for CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/home/**").permitAll()
                         // Protected endpoints
                         .requestMatchers("/api/customer/**").hasAuthority(CUSTOMER.getName())
                         .requestMatchers("/api/manager/**").hasAuthority(RESTAURANT_MANAGER.getName())
