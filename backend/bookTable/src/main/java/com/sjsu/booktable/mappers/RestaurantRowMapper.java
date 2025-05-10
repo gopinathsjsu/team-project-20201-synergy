@@ -7,18 +7,15 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static com.sjsu.booktable.utils.SQLUtils.hasColumn;
+
 public class RestaurantRowMapper implements RowMapper<Restaurant> {
 
     @Override
     public Restaurant mapRow(ResultSet rs, int rowNum) throws SQLException {
-        String locationStr = rs.getString("location");
-        Point location = null;
-        if (locationStr != null && locationStr.startsWith("POINT(")) {
-            String coords = locationStr.substring(6, locationStr.length() - 1);
-            String[] parts = coords.split(" ");
-            double lng = Double.parseDouble(parts[0]);
-            double lat = Double.parseDouble(parts[1]);
-            location = new Point(lng, lat);
+        Point point = null;
+        if (hasColumn(rs, "longitude") && hasColumn(rs, "latitude")) {
+            point = new Point(rs.getDouble("longitude"), rs.getDouble("latitude"));
         }
 
         return Restaurant.builder()
@@ -33,7 +30,7 @@ public class RestaurantRowMapper implements RowMapper<Restaurant> {
                 .state(rs.getString("state"))
                 .zipCode(rs.getString("zip_code"))
                 .country(rs.getString("country"))
-                .location(location)
+                .location(point)
                 .mainPhotoUrl(rs.getString("main_photo_url"))
                 .createdAt(rs.getTimestamp("created_at"))
                 .updatedAt(rs.getTimestamp("updated_at"))

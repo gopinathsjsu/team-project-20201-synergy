@@ -25,4 +25,9 @@ public class HomePageController {
     public ResponseEntity getNearbyRestaurants(@RequestBody @Valid NearbyRestaurantRequest request){
         return ResponseEntity.ok(BTResponse.success(restaurantService.getNearbyRestaurants(request)));
     }
+
+    @GetMapping("/restaurants/{id}")
+    public ResponseEntity getRestaurantById(@PathVariable Integer id){
+        return ResponseEntity.ok(BTResponse.success(restaurantService.fetchRestaurantDetails(id)));
+    }
 }

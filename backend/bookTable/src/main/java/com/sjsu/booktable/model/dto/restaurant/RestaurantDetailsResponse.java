@@ -20,6 +20,8 @@ public class RestaurantDetailsResponse {
     private String state;
     private String zipCode;
     private String country;
+    private Double longitude;
+    private Double latitude;
     private String mainPhotoUrl; // s3 keys
     private List<String> additionalPhotoUrls; // s3 keys
     private List<TableConfigurationDto> tableConfigurations;
