@@ -37,7 +37,9 @@ export const LOGOUT = {
   iconComponent: <LogoutIcon />,
 };
 
-const BASE_NAV_ITEMS = [HOME, BOOKING, PROFILE];
+const BASE_NAV_ITEMS = [HOME, PROFILE];
 
 export const LOGGED_IN_NAV_ITEMS = [...BASE_NAV_ITEMS, LOGOUT];
 export const LOGGED_OUT_NAV_ITEMS = [LOGIN];
+
+export const PROTECTED_ROUTES = [PROFILE.path];
