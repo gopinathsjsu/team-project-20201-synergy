@@ -25,8 +25,11 @@ function Home(props) {
     partySize: 2,
   });
 
-  const { suggestions, isLoading, error, locationError } =
-    useNearbySuggestions();
+  const {
+    suggestions,
+    loading: isLoading,
+    locationError,
+  } = useNearbySuggestions();
 
   const handleSearchSubmit = async (searchPayload) => {
     // console.log("Search triggered with form data:", searchPayload);

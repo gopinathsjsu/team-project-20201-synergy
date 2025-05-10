@@ -1,8 +1,10 @@
 import { Container, Box, Grid, Typography, Divider } from "@mui/material";
+import _size from "lodash/size";
 import styles from "./nearbySuggestions.module.scss";
 import RestaurantCard from "@/components/restaurantCard";
 
 function NearbySuggestion({ restaurantList, searchPayload }) {
+  if (!_size(restaurantList)) return <h2>No restaurants found...</h2>;
   return (
     <div className={styles.welcomeContainer}>
       <Box
