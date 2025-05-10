@@ -2,13 +2,18 @@ package com.sjsu.booktable.service.auth;
 
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
+import com.sjsu.booktable.model.enums.Role;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
+@Slf4j
 public abstract class BaseOTPStrategy implements OTPStrategy {
 
     protected final AWSCognitoIdentityProvider cognitoClient;
@@ -42,6 +47,26 @@ public abstract class BaseOTPStrategy implements OTPStrategy {
                 .withUsername(username));
         return user.getUserAttributes().stream()
                 .noneMatch(attr -> "custom:registered".equals(attr.getName()) && "true".equals(attr.getValue()));
+    }
+
+    protected Role getUserRoleFromCognito(String username) {
+        try {
+            AdminListGroupsForUserRequest request = new AdminListGroupsForUserRequest()
+                    .withUserPoolId(userPoolId)
+                    .withUsername(username);
+            
+            AdminListGroupsForUserResult result = cognitoClient.adminListGroupsForUser(request);
+            List<GroupType> groups = result.getGroups();
+            
+            if (!CollectionUtils.isEmpty(groups)) {
+                return Role.getRoleFromName(groups.get(0).getGroupName());
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.warn("Error getting user role from Cognito: {}", e.getMessage());
+            return null;
+        }
     }
 
     protected String calculateSecretHash(String username) {

@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -62,7 +61,6 @@ public class AuthController {
         // Clear the cookie on logout
         Cookie clearCookie = new Cookie("api-token", null);
         clearCookie.setHttpOnly(true);
-        clearCookie.setSecure(true);
         clearCookie.setPath("/");
         clearCookie.setMaxAge(0); // Delete cookie
         response.addCookie(clearCookie);

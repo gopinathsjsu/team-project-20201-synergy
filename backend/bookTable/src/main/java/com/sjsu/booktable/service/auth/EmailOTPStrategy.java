@@ -7,6 +7,7 @@ import com.sjsu.booktable.model.dto.auth.SendOTPRequest;
 import com.sjsu.booktable.model.dto.auth.SendOTPResponse;
 import com.sjsu.booktable.model.dto.auth.VerifyOTPRequest;
 import com.sjsu.booktable.model.dto.auth.VerifyOTPResponse;
+import com.sjsu.booktable.model.enums.Role;
 import com.sjsu.booktable.utils.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -95,6 +96,9 @@ public class EmailOTPStrategy extends BaseOTPStrategy {
                 response.setIdToken(result.getAuthenticationResult().getIdToken());
                 response.setAccessToken(result.getAuthenticationResult().getAccessToken());
                 response.setRequiresRegistration(checkRegistrationStatus(username));
+
+                Role userRole = getUserRoleFromCognito(username);
+                response.setUserRole(userRole);
 
                 AdminGetUserResult user = cognitoClient.adminGetUser(new AdminGetUserRequest()
                         .withUserPoolId(userPoolId).withUsername(username));
