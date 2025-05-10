@@ -31,6 +31,11 @@ import java.util.stream.Collectors;
 
 import static com.sjsu.booktable.utils.RestaurantUtil.buildFullAddress;
 
+import com.sjsu.booktable.repository.RatingReviewRepository;
+import com.sjsu.booktable.model.dto.RatingReviewDto;
+import com.sjsu.booktable.model.entity.RatingReview;
+
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -44,9 +49,11 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final GoogleMapsService googleMapsService;
     private final BookingService bookingService;
     private final RestaurantValidator validator;
-
     private static final int SLOT_TOLERANCE_MINUTES = 30;
     private final S3Service s3Service;
+
+    private final RatingReviewRepository ratingReviewRepository;
+
 
     @Override
     @Transactional
@@ -55,7 +62,8 @@ public class RestaurantServiceImpl implements RestaurantService {
             validator.validateRestaurantRequest(request);
             String fullAddress = buildFullAddress(request);
             double[] coords = googleMapsService.geocode(fullAddress);
-            int restaurantId = saveRestaurantDetails(request, coords, request.getMainPhotoUrl(), managerId);
+            // Assuming saveRestaurantDetails expects individual longitude and latitude
+            int restaurantId = saveRestaurantDetails(request, coords[0], coords[1], request.getMainPhotoUrl(), managerId);
 
             saveAdditionalPhotos(request.getAdditionalPhotoUrls(), restaurantId);
 
@@ -87,7 +95,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             String fullAddress = buildFullAddress(request);
             double[] coords = googleMapsService.geocode(fullAddress);
-            updateRestaurantDetails(restaurantId, request.getBasicDetails(), coords, request.getMainPhotoUrl());
+            // Assuming updateRestaurantDetails expects individual longitude and latitude
+            updateRestaurantDetails(restaurantId, request.getBasicDetails(), coords[0], coords[1], request.getMainPhotoUrl());
 
             updateAdditionalPhotos(restaurantId, request.getAdditionalPhotoUrls());
 
@@ -242,6 +251,22 @@ public class RestaurantServiceImpl implements RestaurantService {
             latitude = restaurant.getLocation().getY();
         }
 
+        List<RatingReview> ratingsReviews = ratingReviewRepository.findByRestaurantId(restaurantId);
+
+        double averageRating = ratingsReviews.stream()
+                .mapToInt(RatingReview::getRating)
+                .average()
+                .orElse(0.0); // Default to 0.0 if no ratings
+
+        // Convert RatingReview entities to DTOs
+        List<RatingReviewDto> reviewDtos = ratingsReviews.stream()
+                .map(rr -> RatingReviewDto.builder()
+                        .rating(rr.getRating())
+                        .reviewText(rr.getReviewText())
+                        .build())
+                .toList();
+
+
         return RestaurantDetailsResponse.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
@@ -257,17 +282,36 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .longitude(longitude)
                 .latitude(latitude)
                 .mainPhotoUrl(restaurant.getMainPhotoUrl())
+                .approved(restaurant.isApproved())
                 .additionalPhotoUrls(additionalPhotoUrls)
                 .tableConfigurations(tableConfigurations)
                 .operatingHours(hours)
                 .timeSlots(timeSlots)
-                .approved(restaurant.isApproved())
+                .averageRating(averageRating)
+                .reviews(reviewDtos)
                 .build();
     }
 
-    private int saveRestaurantDetails(RestaurantRequest request, double[] coords, String mainPhotoUrl, String managerId) {
+    @Override
+    public RestaurantSearchResponse getNearbyRestaurants(NearbyRestaurantRequest request) {
+        try {
+            List<RestaurantSearchDetails> nearbyRestaurants = restaurantRepository.findNearbyRestaurants(
+                    request.getLongitude(), request.getLatitude(), request.getRadius());
+
+            return RestaurantSearchResponse.builder()
+                    .count(nearbyRestaurants.size())
+                    .restaurantSearchDetails(nearbyRestaurants)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error while finding nearby restaurants: ", e);
+            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    private int saveRestaurantDetails(RestaurantRequest request, double longitude, double latitude, String mainPhotoUrl, String managerId) {
         return restaurantRepository.addRestaurantDetails(
-                request.getBasicDetails(), coords[0], coords[1], mainPhotoUrl, managerId);
+                request.getBasicDetails(), longitude, latitude, mainPhotoUrl, managerId);
     }
 
     private void saveAdditionalPhotos(List<String> additionalPhotoUrls, int restaurantId) {
@@ -302,6 +346,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         System.out.println("toDelete: " + toDelete);
         System.out.println("toAdd: " + toAdd);
 
+
         if(!toDelete.isEmpty()) {
             photoService.deletePhotoByRestaurantIdAndS3Url(restaurantId, toDelete.stream().toList());
             s3Service.deleteFilesBulk(toDelete.stream().toList());
@@ -326,8 +371,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
     }
 
-    private void updateRestaurantDetails(int restaurantId, RestaurantDetailsRequest basicDetails, double[] coords, String mainPhotoUrl) {
-        restaurantRepository.updateRestaurantDetails(restaurantId, basicDetails, coords[0], coords[1], mainPhotoUrl);
+    private void updateRestaurantDetails(int restaurantId, RestaurantDetailsRequest basicDetails, double longitude, double latitude, String mainPhotoUrl) {
+        restaurantRepository.updateRestaurantDetails(restaurantId, basicDetails, longitude, latitude, mainPhotoUrl);
     }
 
     private boolean isWithinOperatingHours(int restaurantId, LocalTime resTime, int dayOfWeek) {

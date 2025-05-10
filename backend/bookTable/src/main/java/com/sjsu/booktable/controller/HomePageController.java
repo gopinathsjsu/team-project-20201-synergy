@@ -17,17 +17,17 @@ public class HomePageController {
     private final RestaurantService restaurantService;
 
     @PostMapping("/restaurants/search")
-    public ResponseEntity searchRestaurants(@RequestBody @Valid RestaurantSearchRequest restaurantSearchRequest){
+    public ResponseEntity searchRestaurants(@RequestBody @Valid RestaurantSearchRequest restaurantSearchRequest) {
         return ResponseEntity.ok(BTResponse.success(restaurantService.searchRestaurants(restaurantSearchRequest)));
     }
 
     @PostMapping("/restaurants/nearby")
-    public ResponseEntity getNearbyRestaurants(@RequestBody @Valid NearbyRestaurantRequest request){
+    public ResponseEntity getNearbyRestaurants(@RequestBody @Valid NearbyRestaurantRequest request) {
         return ResponseEntity.ok(BTResponse.success(restaurantService.getNearbyRestaurants(request)));
     }
-
     @GetMapping("/restaurants/{id}")
-    public ResponseEntity getRestaurantById(@PathVariable Integer id){
+    public ResponseEntity fetchRestaurantDetails(@PathVariable int id) {
         return ResponseEntity.ok(BTResponse.success(restaurantService.fetchRestaurantDetails(id)));
     }
 }
+

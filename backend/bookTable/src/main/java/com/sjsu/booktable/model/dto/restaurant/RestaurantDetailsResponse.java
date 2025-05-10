@@ -1,5 +1,6 @@
 package com.sjsu.booktable.model.dto.restaurant;
 
+import com.sjsu.booktable.model.dto.RatingReviewDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -28,5 +29,8 @@ public class RestaurantDetailsResponse {
     private List<HoursDto> operatingHours;
     private List<TimeSlotDto> timeSlots;
     private boolean approved;
+    private Double averageRating;
+    private List<RatingReviewDto> reviews;
+
 
 }
