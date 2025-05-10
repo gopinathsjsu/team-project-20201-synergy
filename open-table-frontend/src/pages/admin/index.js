@@ -87,40 +87,53 @@ function AdminDashboard() {
         Admin Dashboard
       </Typography>
        <Typography variant="caption" display="block" gutterBottom>
+        {/* This date range is determined by the backend, currently for the last month */}
         (Data from {new Date(analyticsData.startDate).toLocaleDateString()} to {new Date(analyticsData.endDate).toLocaleDateString()})
       </Typography>
 
       <Grid container spacing={3} sx={{ marginTop: 2 }}>
-        {/* Stat Cards */}
+        {/* Total Reservations Card */}
         <Grid item xs={12} sm={6}>
           <Card>
             <CardContent>
+              {/* Added "Total Reservations" text */}
+              <Typography variant="h6" gutterBottom>
+                Total Reservations
+              </Typography>
+              {/* Displays the number of total reservations */}
               <Typography variant="h4">{analyticsData.totalReservations ?? 'N/A'}</Typography>
+              {/* Indicates the time period for the data */}
               <Typography variant="body2">(Last Month)</Typography>
             </CardContent>
           </Card>
         </Grid>
+
+        {/* Average Reservations per Day Card */}
         <Grid item xs={12} sm={6}>
           <Card>
             <CardContent>
               <Typography variant="h6">Average Reservations / Day</Typography>
                <Typography variant="h4">
+                 {/* Formats the average reservations to two decimal places */}
                  {analyticsData.averageReservationsPerDay?.toFixed(2) ?? 'N/A'}
               </Typography>
+               {/* Indicates the time period for the data */}
                <Typography variant="body2">(Last Month)</Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Popular Restaurants List */}
+        {/* Most Popular Restaurants List */}
         <Grid item xs={12}>
            <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Most Popular Restaurants (Last Month)
               </Typography>
+              {/* Checks if there are popular restaurants to display */}
               {analyticsData.mostPopularRestaurants && analyticsData.mostPopularRestaurants.length > 0 ? (
                 <List dense>
+                  {/* Maps through the list of popular restaurants and displays them */}
                   {analyticsData.mostPopularRestaurants.map((restaurant, index) => (
                     <React.Fragment key={restaurant.id}>
                       <ListItem>
@@ -130,6 +143,7 @@ function AdminDashboard() {
                         />
                         {/* You could add more details or links here */}
                       </ListItem>
+                      {/* Adds a divider between list items */}
                       {index < analyticsData.mostPopularRestaurants.length - 1 && <Divider />}
                     </React.Fragment>
                   ))}
@@ -141,6 +155,26 @@ function AdminDashboard() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Snackbar for feedback messages (e.g., error fetching data) */}
+      {/* This part is already present in your original code */}
+      {/* You can keep this as is for displaying messages */}
+      {/*
+       <Snackbar
+         open={snackbar.open}
+         autoHideDuration={6000}
+         onClose={() => setSnackbar({ ...snackbar, open: false })}
+         anchorOrigin={{ vertical: "top", horizontal: "center" }}
+       >
+         <Alert
+           onClose={() => setSnackbar({ ...snackbar, open: false })}
+           severity={snackbar.severity}
+           sx={{ width: "100%" }}
+         >
+           {snackbar.message}
+         </Alert>
+       </Snackbar>
+       */}
     </Box>
   );
 }
