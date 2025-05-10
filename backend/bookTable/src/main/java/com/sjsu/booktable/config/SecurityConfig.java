@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/customer/**").hasAuthority(CUSTOMER.getName())
                         .requestMatchers("/api/manager/**").hasAuthority(RESTAURANT_MANAGER.getName())
                         .requestMatchers("/api/admin/**").hasAuthority(ADMIN.getName())
+                        .requestMatchers("/api/booking/**").hasAuthority(CUSTOMER.getName())
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )

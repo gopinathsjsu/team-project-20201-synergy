@@ -19,7 +19,7 @@ public class Booking {
 
     private int id;
     private int restaurantId;
-    private int customerId;
+    private String customerId;
     private Date bookingDate;
     private Time bookingTime;
     private int partySize;
