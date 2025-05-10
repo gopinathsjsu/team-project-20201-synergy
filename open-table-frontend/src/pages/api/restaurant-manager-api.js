@@ -7,7 +7,7 @@ export const uploadImageToS3 = async (file, folder) => {
   // Request a pre-signed URL from the backend.
   // NOTE: Ensure that your API URL and query parameters match your backend.
   const presignedRes = await fetch(
-    `${API_BASE}/manager/presigned-url?folder=${folder}&fileName=${encodeURIComponent(
+    `${API_BASE}/api/manager/presigned-url?folder=${folder}&fileName=${encodeURIComponent(
       fileName
     )}`,
     {
@@ -45,7 +45,7 @@ export const addRestaurant = async (payload) => {
   console.log("payload for add restaurant:", payload);
 
   const response = await fetch(
-    `${API_BASE}/manager/restaurants`,
+    `${API_BASE}/api/manager/restaurants`,
     {
       method: "POST",
       credentials: "include",
@@ -71,7 +71,7 @@ export const updateRestaurant = async (id, payload) => {
   console.log("payload for upload restaurant:", payload);
 
   const response = await fetch(
-    `${API_BASE}/manager/restaurants/${id}`,
+    `${API_BASE}/api/manager/restaurants/${id}`,
     {
       method: "PUT",
       credentials: "include",
@@ -100,7 +100,7 @@ export const updateRestaurant = async (id, payload) => {
  * @throws {Error} - Throws an error if deletion fails.
  */
 export const deleteFilesBulk = async (keys) => {
-  const response = await fetch(`${API_BASE}/manager/bulk`, {
+  const response = await fetch(`${API_BASE}/api/manager/bulk`, {
     method: "DELETE",
     credentials: "include",
     headers: {
@@ -119,7 +119,7 @@ export const deleteFilesBulk = async (keys) => {
 };
 
 export const fetchRestaurants = async () => {
-  const response = await fetch(`${API_BASE}/manager/restaurants`, {
+  const response = await fetch(`${API_BASE}/api/manager/restaurants`, {
     method: "GET",
     credentials: "include",
   });
@@ -135,7 +135,7 @@ export const fetchRestaurants = async () => {
 };
 
 export const getBatchPresignedUrls = async (keys) => {
-  const response = await fetch(`${API_BASE}/manager/presigned-url/batch`, {
+  const response = await fetch(`${API_BASE}/api/s3/presigned-url/batch`, {
     method: "POST",
     credentials: "include",
     headers: {
@@ -157,7 +157,7 @@ export const getBatchPresignedUrls = async (keys) => {
 
 // fetch restaurant details by id
 export const fetchRestaurantDetailsById = async (id) => {
-  const response = await fetch(`${API_BASE}/manager/restaurants/${id}`, {
+  const response = await fetch(`${API_BASE}/api/manager/restaurants/${id}`, {
     method: "GET",
     credentials: "include",
   });

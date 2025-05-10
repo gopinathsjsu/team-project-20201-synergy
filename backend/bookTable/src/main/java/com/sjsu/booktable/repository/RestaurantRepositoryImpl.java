@@ -28,8 +28,11 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public Restaurant findById(int id) {
-        String sql = "SELECT * FROM restaurants WHERE id = ? AND deleted = FALSE";
-        // Use query for single object, handles EmptyResultDataAccessException if not found
+        String sql = "SELECT id, name, cuisine_type, cost_rating, description, contact_phone, " +
+                "address_line, city, state, zip_code, country, " +
+                "ST_X(location) as longitude, ST_Y(location) as latitude, " +
+                "main_photo_url, created_at, updated_at, approved, manager_id, deleted " +
+                "FROM restaurants WHERE id = ?";
         try {
             return this.jdbcTemplate.queryForObject(sql, new RestaurantRowMapper(), id);
         } catch (org.springframework.dao.EmptyResultDataAccessException e) {
@@ -59,8 +62,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public List<Restaurant> getMostPopularRestaurants(LocalDateTime startDate, LocalDateTime endDate) {
-        // ***** CORRECTED SQL QUERY *****
-        // Filters based on booking_date using DATE() function
+
         String sql = """
             SELECT r.* FROM restaurants r
             JOIN bookings b ON r.id = b.restaurant_id
@@ -70,16 +72,13 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             ORDER BY COUNT(b.id) DESC
             LIMIT 10
             """;
-        // Pass the original LocalDateTime parameters
         return jdbcTemplate.query(sql, new RestaurantRowMapper(), startDate, endDate);
     }
 
     @Override
     public int getTotalReservations(LocalDateTime startDate, LocalDateTime endDate) {
-        // ***** CORRECTED SQL QUERY *****
-        // Filters based on booking_date using DATE() function
+
         String sql = "SELECT COUNT(*) FROM bookings WHERE booking_date BETWEEN DATE(?) AND DATE(?)";
-        // Pass the original LocalDateTime parameters
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, startDate, endDate);
         return count != null ? count : 0; // Handle potential null result from queryForObject
     }
@@ -87,7 +86,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     @Override
     public int addRestaurantDetails(RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl, String managerId) {
         String sql = "INSERT INTO restaurants (name, cuisine_type, cost_rating, description, contact_phone, address_line, city, state, zip_code, country, location, main_photo_url, approved, manager_id, deleted, created_at, updated_at)" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, false, NOW(), NOW())"; // Added NOW() for timestamps
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, false, NOW(), NOW())";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -107,8 +106,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             ps.setString(13, photoUrl);
             ps.setBoolean(14, false); // Default to not approved
             ps.setString(15, managerId);
-            // deleted default is false in DB schema or set here
-            // created_at and updated_at set by NOW()
+
             return ps;
         }, keyHolder);
 
@@ -122,7 +120,6 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public void updateRestaurantDetails(int id, RestaurantDetailsRequest details, double longitude, double latitude, String photoUrl) {
-        // Added updated_at = NOW()
         String sql = "UPDATE restaurants SET name = ?, cuisine_type = ?, cost_rating = ?, description = ?, contact_phone = ?, " +
                 "address_line = ?, city = ?, state = ?, zip_code = ?, country = ?, location = POINT(?, ?), main_photo_url = ?, updated_at = NOW() " +
                 "WHERE id = ?";
@@ -134,8 +131,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText) {
-        // Note: Using ST_Distance_Sphere which takes (point1, point2) where points are (longitude, latitude)
-        // The POINT() function in MySQL also stores as (longitude, latitude)
+
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
         // Calculate distance in meters using user's location and restaurant's location
@@ -146,7 +142,6 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         sql.append("AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? "); // Parameters: restaurant's location, user's location (lng, lat), radius in meters
 
         Object[] params;
-        // Parameters need to be in the order they appear in the SQL: userLng, userLat, userLng, userLat, radius
         List<Object> paramList = new java.util.ArrayList<>(List.of(longitude, latitude, longitude, latitude, FIXED_RADIUS));
 
         if (!StringUtils.isBlank(searchText)) {
@@ -176,5 +171,20 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     public List<Restaurant> findAllNonDeleted() {
         String sql = "SELECT * FROM restaurants WHERE deleted = false";
         return this.jdbcTemplate.query(sql, new RestaurantRowMapper());
+    }
+
+    @Override
+    public List<RestaurantSearchDetails> findNearbyRestaurants(double longitude, double latitude, int radiusInKm) {
+        int radiusInMeters = radiusInKm * 1000;
+
+        String sql = "SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, " +
+                "ST_Distance_Sphere(location, POINT(?, ?)) AS distance " +
+                "FROM restaurants " +
+                "WHERE approved = TRUE AND deleted = FALSE " +
+                "AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? " +
+                "ORDER BY distance ";
+
+        Object[] params = {longitude, latitude, longitude, latitude, radiusInMeters};
+        return jdbcTemplate.query(sql, new RestaurantSearchRowMapper(), params);
     }
 }

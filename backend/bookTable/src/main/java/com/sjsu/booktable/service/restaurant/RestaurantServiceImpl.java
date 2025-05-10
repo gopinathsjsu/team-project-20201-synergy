@@ -3,6 +3,7 @@ package com.sjsu.booktable.service.restaurant;
 import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.restaurant.RestaurantException;
 import com.sjsu.booktable.model.dto.restaurant.*;
+import com.sjsu.booktable.model.dto.restaurantSearch.NearbyRestaurantRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchResponse;
@@ -116,13 +117,13 @@ public class RestaurantServiceImpl implements RestaurantService {
                     searchRequest.getLongitude(), searchRequest.getLatitude(), searchRequest.getSearchText());
 
             List<RestaurantSearchDetails> availableRestaurants = new ArrayList<>();
+            LocalDate resDate = searchRequest.getDate();
+            int dayOfWeek = resDate.getDayOfWeek().getValue() % 7;
+            LocalTime resTime = searchRequest.getTime();
+            int partySize = searchRequest.getPartySize();
 
             for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
                 int restaurantId = nearbyRestaurant.getId();
-                LocalDate resDate = searchRequest.getDate();
-                int dayOfWeek = resDate.getDayOfWeek().getValue() % 7;
-                LocalTime resTime = searchRequest.getTime();
-                int partySize = searchRequest.getPartySize();
 
                 boolean withinHours = isWithinOperatingHours(restaurantId, resTime, dayOfWeek);
                 if (!withinHours) {
@@ -152,6 +153,52 @@ public class RestaurantServiceImpl implements RestaurantService {
         } catch (Exception e) {
             log.error("Error while searching for restaurants: ", e);
             throw e;
+        }
+    }
+
+    @Override
+    public RestaurantSearchResponse getNearbyRestaurants(NearbyRestaurantRequest request) {
+        try {
+            List<RestaurantSearchDetails> nearbyRestaurants = restaurantRepository.findNearbyRestaurants(
+                    request.getLongitude(), request.getLatitude(), request.getRadius());
+
+            List<RestaurantSearchDetails> availableRestaurants = new ArrayList<>();
+
+            LocalDate currentDate = LocalDate.now();
+            int dayOfWeek = currentDate.getDayOfWeek().getValue() % 7;
+            LocalTime currentTime = LocalTime.now();
+
+            for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
+                int restaurantId = nearbyRestaurant.getId();
+
+                boolean withinHours = isWithinOperatingHours(restaurantId, currentTime, dayOfWeek);
+                if (!withinHours) {
+                    continue;
+                }
+
+                List<LocalTime> matchingSlots = getMatchingTimeSlots(restaurantId, dayOfWeek, currentTime);
+
+                if (matchingSlots.isEmpty()) {
+                    continue;
+                }
+
+                List<String> availableTimeSlots = getAvailableTimeSlots(restaurantId, currentDate, matchingSlots, 1);
+
+                if (availableTimeSlots.isEmpty()) {
+                    continue;
+                }
+
+                nearbyRestaurant.setAvailableTimeSlots(availableTimeSlots);
+                availableRestaurants.add(nearbyRestaurant);
+            }
+
+            return RestaurantSearchResponse.builder()
+                    .count(availableRestaurants.size())
+                    .restaurantSearchDetails(availableRestaurants)
+                    .build();
+        } catch(Exception e){
+            log.error("Error while finding nearby restaurants: ", e);
+            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -187,6 +234,14 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<HoursDto> hours = restaurantHoursService.getHoursForRestaurant(restaurantId);
         List<TimeSlotDto> timeSlots = timeSlotService.getTimeSlotsForRestaurant(restaurantId);
 
+        // Extract coordinates safely handling null locations
+        Double longitude = null;
+        Double latitude = null;
+        if (restaurant.getLocation() != null) {
+            longitude = restaurant.getLocation().getX();
+            latitude = restaurant.getLocation().getY();
+        }
+
         return RestaurantDetailsResponse.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
@@ -199,6 +254,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .state(restaurant.getState())
                 .zipCode(restaurant.getZipCode())
                 .country(restaurant.getCountry())
+                .longitude(longitude)
+                .latitude(latitude)
                 .mainPhotoUrl(restaurant.getMainPhotoUrl())
                 .additionalPhotoUrls(additionalPhotoUrls)
                 .tableConfigurations(tableConfigurations)
