@@ -292,6 +292,23 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .build();
     }
 
+    @Override
+    public RestaurantSearchResponse getNearbyRestaurants(NearbyRestaurantRequest request) {
+        try {
+            List<RestaurantSearchDetails> nearbyRestaurants = restaurantRepository.findNearbyRestaurants(
+                    request.getLongitude(), request.getLatitude(), request.getRadius());
+
+            return RestaurantSearchResponse.builder()
+                    .count(nearbyRestaurants.size())
+                    .restaurantSearchDetails(nearbyRestaurants)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error while finding nearby restaurants: ", e);
+            throw new RestaurantException("Failed to find nearby restaurants. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     private int saveRestaurantDetails(RestaurantRequest request, double longitude, double latitude, String mainPhotoUrl, String managerId) {
         return restaurantRepository.addRestaurantDetails(
                 request.getBasicDetails(), longitude, latitude, mainPhotoUrl, managerId);
