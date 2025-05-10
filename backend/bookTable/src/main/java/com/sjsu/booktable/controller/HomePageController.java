@@ -27,8 +27,6 @@ public class HomePageController {
     }
     @GetMapping("/restaurants/{id}")
     public ResponseEntity fetchRestaurantDetails(@PathVariable int id) {
-        // This calls the same service method used by the ManagerController,
-        // which now includes ratings and reviews.
         return ResponseEntity.ok(BTResponse.success(restaurantService.fetchRestaurantDetails(id)));
     }
 }
