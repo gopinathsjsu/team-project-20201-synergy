@@ -39,16 +39,12 @@ function VerifyForm({ onClose, loginData, onShowRegistration }) {
     setVerifyLoading(true);
     
     try {
-      console.log("VerifyForm: About to make POST request to:", url);
       const response = await axios.post(url, req, { withCredentials: true });
       console.log("VerifyForm: Full API response:", response);
-      console.log("VerifyForm: Response structure:", JSON.stringify(response.data, null, 2));
-      
       // Extract the response data correctly
       const responseData = response?.data?.data;
       console.log("VerifyForm: OTP verification response data:", responseData);
-      console.log("VerifyForm: requiresRegistration value:", responseData?.requiresRegistration);
-      
+  
       // Do a more explicit check for requiresRegistration being true
       // This ensures we catch the case even if it's a string 'true' instead of boolean true
       const requiresRegistration = 
@@ -57,7 +53,6 @@ function VerifyForm({ onClose, loginData, onShowRegistration }) {
       
       // Handle registration if required
       if (requiresRegistration) {
-        console.log("VerifyForm: Registration required (explicit check passed), preparing registration data");
         
         // Pass the login data to the registration form
         const registrationData = {
@@ -65,9 +60,6 @@ function VerifyForm({ onClose, loginData, onShowRegistration }) {
           phoneNumber: loginData.identifier === 'phone' ? loginData.value : null,
           ...responseData
         };
-        
-        console.log("VerifyForm: Registration data prepared:", registrationData);
-        console.log("VerifyForm: onShowRegistration exists:", typeof onShowRegistration === 'function');
         
         setSnackbarMessage("Please complete registration");
         setOpenSnackbar(true);
@@ -79,11 +71,6 @@ function VerifyForm({ onClose, loginData, onShowRegistration }) {
           onShowRegistration(registrationData);
           console.log("VerifyForm: onShowRegistration function called. NOT closing verify form.");
           
-          // IMPORTANT: Don't close the verify form, let AuthModal handle the view changes
-          // This prevents the modal from closing completely
-          // onClose(); - Removing this line
-          
-          // Return early to prevent the rest of the function from executing
           return;
         } else {
           console.error("VerifyForm: Registration function not provided");
