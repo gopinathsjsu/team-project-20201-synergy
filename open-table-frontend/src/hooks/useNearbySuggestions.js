@@ -46,7 +46,6 @@ function useNearbySuggestions(props) {
         setSuggestions(data || []);
       } catch (err) {
         console.error("Error fetching suggestions:", err);
-        return { erro };
       }
       setIsFetchLoading(false);
     };
@@ -55,6 +54,8 @@ function useNearbySuggestions(props) {
       fetchSuggestions();
     }
   }, [locationCoords]);
+
+  console.log(locationError);
 
   return {
     suggestions,

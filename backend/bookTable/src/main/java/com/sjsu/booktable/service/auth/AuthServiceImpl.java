@@ -6,6 +6,7 @@ import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.auth.LogoutFailedException;
 import com.sjsu.booktable.model.dto.auth.*;
 import com.sjsu.booktable.model.enums.OTPIdentifier;
+import com.sjsu.booktable.model.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,15 +49,21 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthStatusResponse getLoginStatus(Authentication authentication) {
+        AuthStatusResponse authStatusResponse = new AuthStatusResponse();
+        
         if(authentication != null && authentication.isAuthenticated()) {
-            AuthStatusResponse authStatusResponse = new AuthStatusResponse();
             authStatusResponse.setLoggedIn(true);
-            return authStatusResponse;
+            
+            // Get role from authentication authorities
+            if (!authentication.getAuthorities().isEmpty()) {
+                String role = authentication.getAuthorities().iterator().next().getAuthority();
+                authStatusResponse.setUserRole(Role.getRoleFromName(role));
+            }
         } else {
-            AuthStatusResponse authStatusResponse = new AuthStatusResponse();
             authStatusResponse.setLoggedIn(false);
-            return authStatusResponse;
         }
+        
+        return authStatusResponse;
     }
 
     @Override

@@ -1,0 +1,50 @@
+.dialogContentContainer {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+.formContainer {
+  margin-top: 16px;
+}
+
+.registerCta {
+  margin-top: 24px !important;
+  height: 56px;
+  cursor: pointer;
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.inputField {
+  margin-bottom: 12px;
+}
+
+.errorText {
+  color: #f44336;
+  margin-top: 8px;
+  font-size: 0.75rem;
+} 

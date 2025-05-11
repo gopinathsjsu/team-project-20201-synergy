@@ -12,14 +12,16 @@ import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
 import styles from "./verifyForm.module.scss";
 import { AuthContext } from "@/AuthContext/AuthContext";
+import { useRouter } from "next/router";
 
-function VerifyForm({ onClose, loginData }) {
-  const { setIsLoggedIn } = useContext(AuthContext);
+function VerifyForm({ onClose, loginData, onShowRegistration }) {
+  const { setIsLoggedIn, setUserRole } = useContext(AuthContext);
   const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isVerifyLoading, setVerifyLoading] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e) => {
     setError("");
@@ -32,20 +34,93 @@ function VerifyForm({ onClose, loginData }) {
   const handleSubmit = async (e) => {
     const req = { ...loginData, otp: verificationCode };
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/otp/verify`;
+    
+    console.log("VerifyForm: Submitting OTP verification with data:", req);
     setVerifyLoading(true);
+    
     try {
-      await axios.post(url, req, { withCredentials: true });
-      // loggedIn successful snackbar
-      setSnackbarMessage("Logged In successfully");
-      onClose();
+      const response = await axios.post(url, req, { withCredentials: true });
+      console.log("VerifyForm: Full API response:", response);
+      // Extract the response data correctly
+      const responseData = response?.data?.data;
+      console.log("VerifyForm: OTP verification response data:", responseData);
+  
+      // Do a more explicit check for requiresRegistration being true
+      // This ensures we catch the case even if it's a string 'true' instead of boolean true
+      const requiresRegistration = 
+        responseData?.requiresRegistration === true || 
+        responseData?.requiresRegistration === 'true';
+      
+      // Handle registration if required
+      if (requiresRegistration) {
+        
+        // Pass the login data to the registration form
+        const registrationData = {
+          email: loginData.identifier === 'email' ? loginData.value : null,
+          phoneNumber: loginData.identifier === 'phone' ? loginData.value : null,
+          ...responseData
+        };
+        
+        setSnackbarMessage("Please complete registration");
+        setOpenSnackbar(true);
+        
+        // If onShowRegistration function is provided, use it to show registration modal
+        if (typeof onShowRegistration === 'function') {
+          console.log("VerifyForm: Calling onShowRegistration function with data:", registrationData);
+          // Call the function to show registration but DO NOT close this form
+          onShowRegistration(registrationData);
+          console.log("VerifyForm: onShowRegistration function called. NOT closing verify form.");
+          
+          return;
+        } else {
+          console.error("VerifyForm: Registration function not provided");
+          // Continue with login if for some reason registration function is not available
+        }
+      }
+      
+      // If we get here, registration is NOT required, so we can proceed with login
+      console.log("Login successful, redirecting based on role");
+      
+      // Get user role from response
+      const userRole = responseData.userRole || 'CUSTOMER'; // Default to CUSTOMER if no role
+      console.log("VerifyForm: User role from response:", userRole);
+      
+      // Set user role in context
+      setUserRole(userRole);
+      
+      // Set logged in state
       setIsLoggedIn(true);
-    } catch (err) {
-      console.log(err);
-      // Incorrect OTP, Retry snackbar
-      setSnackbarMessage(err.message);
-      setError("Verification failed, Retry!");
-    } finally {
+      
+      // Login successful snackbar
+      setSnackbarMessage("Logged in successfully");
       setOpenSnackbar(true);
+      
+      // Close the modal
+      onClose();
+      
+      // Redirect based on role - using router.replace instead of push to ensure proper redirection
+      console.log(`VerifyForm: Redirecting user with role ${userRole}`);
+      
+      // Force immediate redirection without delay
+      if (userRole === "ADMIN") {
+        console.log("VerifyForm: Redirecting to admin page");
+        // Use push to match AuthContext behavior
+        router.push("/admin");
+      } else if (userRole === "RESTAURANT_MANAGER") {
+        console.log("VerifyForm: Redirecting to restaurant manager dashboard");
+        router.push("/restaurant-manager/dashboard");
+      } else {
+        console.log("VerifyForm: Redirecting to home page");
+        router.push("/");
+      }
+      
+    } catch (err) {
+      console.error("Verification error:", err);
+      // Incorrect OTP, Retry snackbar
+      setSnackbarMessage(err.response?.data?.errorMessage || err.message || "Verification failed");
+      setError("Verification failed, please try again");
+      setVerifyLoading(false);
+    } finally {
       setVerifyLoading(false);
     }
   };
@@ -95,19 +170,15 @@ function VerifyForm({ onClose, loginData }) {
         />
         <div className="flex flex-column g-8">
           <Button
-            // disabled={isContinueDisabled}
-            // sx={{
-            //   cursor: isContinueDisabled ? "not-allowed" : "pointer",
-            // }}
             variant="contained"
             color="success"
             className={styles.verifyCta}
             onClick={handleSubmit}
             size="large"
-            loading={isVerifyLoading}
+            disabled={isVerifyLoading}
           >
             <Typography textTransform="none" fontWeight={800} variant="button">
-              {`Verify`}
+              {isVerifyLoading ? "Verifying..." : "Verify"}
             </Typography>
           </Button>
           <div className="flex-center">

@@ -23,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -164,9 +162,9 @@ public class RestaurantServiceImpl implements RestaurantService {
 
             List<RestaurantSearchDetails> availableRestaurants = new ArrayList<>();
 
-            LocalDate currentDate = LocalDate.now();
+            LocalDate currentDate = LocalDate.now(ZoneId.of("America/Los_Angeles"));
             int dayOfWeek = currentDate.getDayOfWeek().getValue() % 7;
-            LocalTime currentTime = LocalTime.now();
+            LocalTime currentTime = LocalTime.now(ZoneId.of("America/Los_Angeles")).plusMinutes(30);
 
             for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
                 int restaurantId = nearbyRestaurant.getId();
