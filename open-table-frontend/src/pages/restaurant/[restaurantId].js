@@ -10,6 +10,10 @@ import {
   Button,
   TextField,
   MenuItem,
+  Grid,
+  ImageList,
+  ImageListItem,
+  CardMedia,
 } from "@mui/material";
 import dayjs from "dayjs";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -23,12 +27,12 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import axios from "axios";
 import { AuthContext } from "@/AuthContext/AuthContext";
 import {
-  CardMedia,
   Accordion,
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { getPresignedUrls } from "@/utils/imageUtils";
 
 const WEEK_DAYS = [
   "Sunday",
@@ -40,8 +44,16 @@ const WEEK_DAYS = [
   "Saturday",
 ];
 
+// Default placeholder image
+const DEFAULT_PLACEHOLDER = "https://images.pexels.com/photos/696218/pexels-photo-696218.jpeg";
+
 export default function RestaurantPage(props) {
   const [restaurant, setRestaurantData] = useState({});
+  const [mainImageUrl, setMainImageUrl] = useState("");
+  const [additionalImageUrls, setAdditionalImageUrls] = useState([]);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [galleryImageErrors, setGalleryImageErrors] = useState({});
 
   const { isLoggedIn, setOpenLoginModal } = useContext(AuthContext);
 
@@ -61,10 +73,119 @@ export default function RestaurantPage(props) {
       );
       const restaurantData = response?.data?.data;
       setRestaurantData(restaurantData);
+      
+      // Load all restaurant images (main + additional)
+      loadRestaurantImages(restaurantData);
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+  
+  // Function to load all restaurant images using presigned URLs
+  const loadRestaurantImages = async (restaurantData) => {
+    try {
+      if (!restaurantData) return;
+      
+      setIsImageLoading(true);
+      setImageError(false);
+      setGalleryImageErrors({});
+      
+      // Collect all image keys that need presigned URLs
+      const { mainPhotoUrl, additionalPhotoUrls = [] } = restaurantData;
+      
+      // Log data for debugging
+      console.log("Raw mainPhotoUrl:", mainPhotoUrl);
+      console.log("Raw additionalPhotoUrls:", additionalPhotoUrls);
+      
+      // Ensure additionalPhotoUrls is an array
+      const safeAdditionalPhotos = Array.isArray(additionalPhotoUrls) 
+        ? additionalPhotoUrls 
+        : [];
+      
+      const allImageKeys = [
+        mainPhotoUrl, 
+        ...safeAdditionalPhotos
+      ].filter(Boolean);
+      
+      if (allImageKeys.length === 0) {
+        setIsImageLoading(false);
+        return;
+      }
+      
+      console.log("RestaurantPage - Loading images for keys:", allImageKeys);
+      
+      // If it's already a full URL, use it directly for main image
+      if (mainPhotoUrl && typeof mainPhotoUrl === 'string' && mainPhotoUrl.startsWith('http')) {
+        setMainImageUrl(mainPhotoUrl);
+      }
+      
+      // If there are keys to fetch, get their presigned URLs
+      if (allImageKeys.length > 0) {
+        try {
+          // Just get all the presigned URLs without validation at this stage
+          const urls = await getPresignedUrls(allImageKeys);
+          console.log("RestaurantPage - Received presigned URLs:", urls);
+          
+          // Handle main image
+          if (mainPhotoUrl && !mainPhotoUrl.startsWith('http')) {
+            // Try different key formats to find a match
+            if (urls[mainPhotoUrl]) {
+              setMainImageUrl(urls[mainPhotoUrl]);
+            } else if (urls['/' + mainPhotoUrl]) {
+              setMainImageUrl(urls['/' + mainPhotoUrl]);
+            } else if (mainPhotoUrl.startsWith('/') && urls[mainPhotoUrl.substring(1)]) {
+              setMainImageUrl(urls[mainPhotoUrl.substring(1)]);
+            }
+          }
+          
+          // Process additional photos
+          if (safeAdditionalPhotos.length > 0) {
+            const processedUrls = safeAdditionalPhotos
+              .map(key => {
+                if (!key) return null;
+                
+                // If it's a full URL already, use it directly
+                if (typeof key === 'string' && key.startsWith('http')) {
+                  return key;
+                }
+                
+                // Try all possible key formats
+                if (urls[key]) {
+                  return urls[key];
+                } else if (urls['/' + key]) {
+                  return urls['/' + key]; 
+                } else if (key.startsWith('/') && urls[key.substring(1)]) {
+                  return urls[key.substring(1)];
+                }
+                
+                console.log(`No URL found for key: ${key}`);
+                return null;
+              })
+              .filter(Boolean);
+            
+            console.log("RestaurantPage - Processed additional URLs:", processedUrls);
+            setAdditionalImageUrls(processedUrls);
+          }
+        } catch (fetchError) {
+          console.error("RestaurantPage - Error fetching presigned URLs:", fetchError);
+        }
+      }
+    } catch (error) {
+      console.error("RestaurantPage - Error in loadRestaurantImages:", error);
+    } finally {
+      setIsImageLoading(false);
+    }
+  };
+
+  // Handle errors for individual gallery images
+  const handleGalleryImageError = (index, url) => {
+    console.error(`RestaurantPage - Failed to load gallery image at index ${index} from URL:`, url);
+    setGalleryImageErrors(prev => ({
+      ...prev,
+      [index]: true
+    }));
   };
 
   useEffect(() => {
@@ -125,6 +246,7 @@ export default function RestaurantPage(props) {
   const {
     name,
     mainPhotoUrl,
+    additionalPhotoUrls = [],
     cuisineType,
     costRating,
     description,
@@ -140,6 +262,9 @@ export default function RestaurantPage(props) {
     timeSlots,
   } = restaurant;
 
+  // Default placeholder image if no image or error loading
+  const displayImageUrl = mainImageUrl || DEFAULT_PLACEHOLDER;
+
   return (
     <Box marginX={20} marginBottom={10}>
       <Box
@@ -153,17 +278,71 @@ export default function RestaurantPage(props) {
           elevation={3}
           sx={{ borderRadius: 2, overflow: "hidden", mb: 4 }}
         >
-          <CardMedia
-            component="img"
-            height="300"
-            image={
-              mainPhotoUrl ||
-              "https://images.pexels.com/photos/696218/pexels-photo-696218.jpeg"
-            }
-            alt={name}
-            sx={{ objectFit: "cover" }}
-          />
+          {isImageLoading ? (
+            <Box 
+              display="flex" 
+              justifyContent="center" 
+              alignItems="center" 
+              height={300} 
+              bgcolor="grey.200"
+            >
+              <CircularProgress />
+            </Box>
+          ) : (
+            <CardMedia
+              component="img"
+              height="300"
+              image={displayImageUrl}
+              alt={name}
+              sx={{ objectFit: "cover" }}
+              onError={(e) => {
+                if (!imageError) {
+                  console.error(`RestaurantPage - Failed to load main image from URL:`, displayImageUrl);
+                  setMainImageUrl(DEFAULT_PLACEHOLDER);
+                  setImageError(true);
+                }
+              }}
+            />
+          )}
         </Paper>
+
+        {/* Additional Photos Gallery (if available) */}
+        {additionalImageUrls.length > 0 && (
+          <Box mb={4}>
+            <ImageList cols={3} gap={16} sx={{ overflow: "hidden" }}>
+              {additionalImageUrls.map((url, index) => (
+                <ImageListItem key={index} sx={{ height: 200 }}>
+                  {galleryImageErrors[index] ? (
+                    <CardMedia
+                      component="img"
+                      src={DEFAULT_PLACEHOLDER}
+                      alt={`${name || 'Restaurant'} image ${index + 1} (placeholder)`}
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
+                    />
+                  ) : (
+                    <CardMedia
+                      component="img"
+                      src={url}
+                      alt={`${name || 'Restaurant'} image ${index + 1}`}
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: 8,
+                      }}
+                      onError={() => handleGalleryImageError(index, url)}
+                    />
+                  )}
+                </ImageListItem>
+              ))}
+            </ImageList>
+          </Box>
+        )}
 
         <Box marginTop={4} display="flex" gap={4}>
           <Paper elevation={3} sx={{ p: 2, width: "60%" }}>
