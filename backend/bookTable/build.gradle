@@ -81,6 +81,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.amazonaws:aws-java-sdk-ses:1.12.538' // AWS SES SDK
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 dependencyManagement {
