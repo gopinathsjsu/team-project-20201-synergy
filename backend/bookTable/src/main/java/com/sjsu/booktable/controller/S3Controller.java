@@ -24,7 +24,8 @@ public class S3Controller {
     public ResponseEntity getBatchPresignedUrls(@RequestBody List<String> keys,
                                                 @RequestParam(required = false, defaultValue = "10") int expiration) {
         try {
-            Map<String, URL> urls = keys.stream()
+            List<String> uniqueKeys = keys.stream().distinct().toList();
+            Map<String, URL> urls = uniqueKeys.stream()
                     .collect(Collectors.toMap(
                             key -> key,
                             key -> s3Service.generatePresignedGetUrl(key, expiration)
