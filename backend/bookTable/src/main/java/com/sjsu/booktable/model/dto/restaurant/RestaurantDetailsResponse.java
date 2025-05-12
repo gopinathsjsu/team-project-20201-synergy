@@ -23,9 +23,12 @@ public class RestaurantDetailsResponse {
     private Double longitude;
     private Double latitude;
     private String mainPhotoUrl; // s3 keys
+    // Additional photos from the photos table
     private List<String> additionalPhotoUrls; // s3 keys
+    // Operating hours as defined by HoursDTO for each day
     private List<TableConfigurationDto> tableConfigurations;
     private List<HoursDto> operatingHours;
+    // Specific time slots as defined by TimeSlotDTO for each day
     private List<TimeSlotDto> timeSlots;
     private boolean approved;
 

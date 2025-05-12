@@ -4,6 +4,7 @@ import com.sjsu.booktable.exception.auth.InvalidRequestException;
 import com.sjsu.booktable.exception.auth.LogoutFailedException;
 import com.sjsu.booktable.exception.auth.OtpSendFailedException;
 import com.sjsu.booktable.exception.auth.OtpVerificationFailedException;
+import com.sjsu.booktable.exception.booking.BookingNotFoundException;
 import com.sjsu.booktable.exception.restaurant.GeocodingException;
 import com.sjsu.booktable.exception.restaurant.InvalidRestaurantRequestException;
 import com.sjsu.booktable.exception.restaurant.PhotoUploadException;
@@ -63,6 +64,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PhotoUploadException.class)
     public ResponseEntity<BTResponse<String>> handlePhotoUploadException(PhotoUploadException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(BTResponse.failure(ex.getMessage()));
+    }
+
+    @ExceptionHandler(BookingNotFoundException.class)
+    public ResponseEntity<BTResponse<String>> handleBookingNotFoundException(BookingNotFoundException ex) {
         return ResponseEntity.status(ex.getStatus()).body(BTResponse.failure(ex.getMessage()));
     }
 

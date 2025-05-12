@@ -131,7 +131,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public List<RestaurantSearchDetails> searchRestaurants(double longitude, double latitude, String searchText) {
-
+        // Note: Using ST_Distance_Sphere which takes (point1, point2) where points are (longitude, latitude)
+        // The POINT() function in MySQL also stores as (longitude, latitude)
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT id, name, cuisine_type, cost_rating, address_line, city, state, zip_code, main_photo_url, ");
         // Calculate distance in meters using user's location and restaurant's location
@@ -142,6 +143,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         sql.append("AND ST_Distance_Sphere(location, POINT(?, ?)) <= ? "); // Parameters: restaurant's location, user's location (lng, lat), radius in meters
 
         Object[] params;
+        // Parameters need to be in the order they appear in the SQL: userLng, userLat, userLng, userLat, radius
         List<Object> paramList = new java.util.ArrayList<>(List.of(longitude, latitude, longitude, latitude, FIXED_RADIUS));
 
         if (!StringUtils.isBlank(searchText)) {

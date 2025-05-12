@@ -5,17 +5,13 @@ import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.dto.booking.BookingResponseDTO;
 import com.sjsu.booktable.model.entity.Booking;
 import com.sjsu.booktable.model.enums.BookingStatus;
-import com.sjsu.booktable.model.enums.Role;
 import com.sjsu.booktable.repository.BookingRepository;
-import jakarta.validation.Valid;
+import com.sjsu.booktable.service.email.EmailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -24,18 +20,38 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final EmailService emailService;
 
     @Override
-    public String createBooking(BookingRequestDTO bookingRequest) {
-        String booking = bookingRepository.saveBooking(bookingRequest);
-        return booking;
+    public BookingResponseDTO createBooking(BookingRequestDTO bookingRequest) {
+        int bookingId = bookingRepository.saveBooking(bookingRequest);
+        BookingResponseDTO bookingResponse = new BookingResponseDTO();
+        if (bookingId > 0) {
+            Booking booking = bookingRepository.findBookingById(bookingId);
+            bookingResponse.setBooking(booking);
+            bookingResponse.setStatus(booking.getStatus());
+            try {
+                boolean emailSent = emailService.sendBookingConfirmationEmail(bookingId, bookingRequest);
+                bookingResponse.setEmailSent(emailSent);
+                if (emailSent) {
+                    log.info("Booking confirmation email sent for booking ID: {}", bookingId);
+                } else {
+                    log.warn("Failed to send booking confirmation email for booking ID: {}", bookingId);
+                }
+            } catch (Exception e) {
+                log.error("Error sending booking confirmation email", e);
+            }
+        }
+
+        return bookingResponse;
     }
 
     @Override
-    public String cancelBooking(int bookingId) {
+    public BookingResponseDTO cancelBooking(int bookingId) {
         Booking booking = bookingRepository.findBookingById(bookingId);
         if(booking == null){
             throw new BookingNotFoundException("Booking not found");
@@ -49,7 +65,24 @@ public class BookingServiceImpl implements BookingService {
         if(rowsAffected == 0){
             throw new RuntimeException("Booking cancellation failed");
         }
-        return "Booking has been cancelled!";
+        Booking updatedBooking = bookingRepository.findBookingById(bookingId);
+        BookingResponseDTO bookingResponse = new BookingResponseDTO();
+        bookingResponse.setBooking(updatedBooking);
+        bookingResponse.setStatus(updatedBooking.getStatus());
+
+        try {
+            boolean emailSent = emailService.sendBookingCancellationEmail(updatedBooking, updatedBooking.getEmail());
+            bookingResponse.setEmailSent(emailSent);
+            if (emailSent) {
+                log.info("Booking cancellation email sent for booking ID: {}", bookingId);
+            } else {
+                log.warn("Failed to send booking cancellation email for booking ID: {}", bookingId);
+            }
+        } catch (Exception e) {
+            log.error("Error sending booking cancellation email", e);
+        }
+
+        return bookingResponse;
     }
 
     @Override
@@ -62,4 +95,5 @@ public class BookingServiceImpl implements BookingService {
 
         return bookingRepository.getBookedCapacityForTimeSlotsForRestaurant(restaurantId, reservationDate, timeSlots);
     }
+
 }

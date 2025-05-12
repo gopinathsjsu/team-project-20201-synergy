@@ -13,7 +13,7 @@ public interface BookingRepository {
 
     Map<LocalTime, Integer> getBookedCapacityForTimeSlotsForRestaurant(int restaurantId, LocalDate reservationDate, List<LocalTime> timeSlots);
 
-    String saveBooking(BookingRequestDTO bookingRequest);
+    int saveBooking(BookingRequestDTO bookingRequest);
 
     int cancelBookingById(int bookingId);
 

@@ -15,6 +15,8 @@ public class BookingRequestDTO {
     private int restaurantId;
 
     @NotBlank
+    private String restaurantName;
+
     private String customerId;
 
     @NotNull
@@ -25,6 +27,9 @@ public class BookingRequestDTO {
 
     @NotNull
     private int partySize;
+
+    @NotBlank
+    private String email;
 
     private Timestamp createdAt;
     private Timestamp updatedAt;

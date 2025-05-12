@@ -29,6 +29,16 @@
       "name": "google.api.key",
       "type": "java.lang.String",
       "description": "Description for google.api.key."
+    },
+    {
+      "name": "aws.ses.from-email",
+      "type": "java.lang.String",
+      "description": "Description for aws.ses.from-email."
+    },
+    {
+      "name": "booktable.app.base-url",
+      "type": "java.lang.String",
+      "description": "Description for booktable.app.base-url."
     }
   ]
 }
