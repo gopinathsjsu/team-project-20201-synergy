@@ -11,11 +11,12 @@ import {
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import dayjs from "dayjs";
-import { Router, useRouter } from "next/router";
-import { useContext } from "react";
+import { useRouter } from "next/router";
+import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "@/AuthContext/AuthContext";
+import { getPresignedUrls } from "@/utils/imageUtils";
 
-export default function RestaurantCard({ restaurant, searchPayload }) {
+export default function RestaurantCard({ restaurant, searchPayload, presignedUrls = {} }) {
   const {
     name,
     address,
@@ -27,11 +28,58 @@ export default function RestaurantCard({ restaurant, searchPayload }) {
     id,
   } = restaurant;
 
+  const [imageUrl, setImageUrl] = useState("/images/placeholder.png");
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const { isLoggedIn, setOpenLoginModal } = useContext(AuthContext);
 
   const { date, time, partySize } = searchPayload;
+
+  // Use presigned URLs passed from parent or fetch individually if needed
+  useEffect(() => {
+    // Skip if we've already handled an error or if there's no photo URL
+    if (imageError || !mainPhotoUrl) {
+      return;
+    }
+    
+    const loadImage = async () => {
+      try {
+        // First check if URL is already in the presignedUrls prop
+        if (presignedUrls && presignedUrls[mainPhotoUrl]) {
+          const url = presignedUrls[mainPhotoUrl];
+          if (url) {
+            setImageUrl(url);
+            return;
+          }
+        }
+        
+        // Only fetch individually if we're not already loading and not in parent props
+        if (isLoading) return;
+        
+        setIsLoading(true);
+        console.log(`RestaurantCard (${name}) - Fetching image URL individually for:`, mainPhotoUrl);
+        const urls = await getPresignedUrls([mainPhotoUrl]);
+        
+        if (urls && urls[mainPhotoUrl]) {
+          setImageUrl(urls[mainPhotoUrl]);
+          setImageError(false);
+        } else {
+          console.warn(`RestaurantCard (${name}) - No URL found for image:`, mainPhotoUrl);
+          setImageUrl("/images/placeholder.png");
+        }
+      } catch (error) {
+        console.error(`RestaurantCard (${name}) - Error loading image:`, error);
+        setImageUrl("/images/placeholder.png");
+        setImageError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadImage();
+  }, [mainPhotoUrl, presignedUrls, name, imageError, isLoading]);
 
   const onSlotClick = (timeSlot) => {
     if (!isLoggedIn) {
@@ -63,9 +111,16 @@ export default function RestaurantCard({ restaurant, searchPayload }) {
       <CardMedia
         component="img"
         height="180"
-        image={mainPhotoUrl || "/images/placeholder.png"}
+        image={imageUrl}
         alt={name}
         sx={{ objectFit: "cover" }}
+        onError={(e) => {
+          if (!imageError) {
+            console.error(`RestaurantCard (${name}) - Failed to load image from URL:`, imageUrl);
+            setImageUrl("/images/placeholder.png");
+            setImageError(true);
+          }
+        }}
       />
 
       <CardContent sx={{ px: 2.5, py: 2 }}>

@@ -1,7 +1,7 @@
 import { Container, Box, Grid, Typography, Divider } from "@mui/material";
 import RestaurantCard from "@/components/restaurantCard";
 
-function SearchResult({ restaurantList, searchPayload }) {
+function SearchResult({ restaurantList, searchPayload, presignedUrls = {} }) {
   return (
     <Container maxWidth="lg">
       <Box
@@ -68,6 +68,7 @@ function SearchResult({ restaurantList, searchPayload }) {
                 <RestaurantCard
                   restaurant={restaurant}
                   searchPayload={searchPayload}
+                  presignedUrls={presignedUrls}
                 />
               </Box>
             </Grid>

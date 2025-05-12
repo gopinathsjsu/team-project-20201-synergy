@@ -3,7 +3,7 @@ import _size from "lodash/size";
 import styles from "./nearbySuggestions.module.scss";
 import RestaurantCard from "@/components/restaurantCard";
 
-function NearbySuggestion({ restaurantList, searchPayload }) {
+function NearbySuggestion({ restaurantList, searchPayload, presignedUrls = {} }) {
   if (!_size(restaurantList)) return <h2>No restaurants found...</h2>;
   return (
     <div className={styles.welcomeContainer}>
@@ -113,6 +113,7 @@ function NearbySuggestion({ restaurantList, searchPayload }) {
                   <RestaurantCard
                     restaurant={restaurant}
                     searchPayload={searchPayload}
+                    presignedUrls={presignedUrls}
                   />
                 </Box>
               </Grid>
