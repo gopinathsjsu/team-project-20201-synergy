@@ -1,9 +1,19 @@
 package com.sjsu.booktable.repository;
 
+import com.sjsu.booktable.mappers.BookingRowMapper;
+import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
+import com.sjsu.booktable.model.entity.Booking;
+import com.sjsu.booktable.model.enums.BookingStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,6 +28,57 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Override
+    public int saveBooking(BookingRequestDTO bookingRequest) {
+        int restaurantId = bookingRequest.getRestaurantId();
+        String restaurantName = bookingRequest.getRestaurantName();
+        String customerId = bookingRequest.getCustomerId();
+        Date bookingDate = Date.valueOf(bookingRequest.getBookingDate());
+        Time bookingTime = Time.valueOf(bookingRequest.getBookingTime());
+        int partySize = bookingRequest.getPartySize();
+        String email = bookingRequest.getEmail();
+        String status = BookingStatus.CONFIRMED.getStatus();
+        String insertBookingSql =  "INSERT INTO bookings (restaurant_id, restaurant_name, customer_id, booking_date, booking_time, email, party_size, status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        this.jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(insertBookingSql, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, restaurantId);
+            ps.setString(2, restaurantName);
+            ps.setString(3, customerId);
+            ps.setDate(4, bookingDate);
+            ps.setTime(5, bookingTime);
+            ps.setString(6, email);
+            ps.setInt(7, partySize);
+            ps.setString(8, status);
+            return ps;
+        }, keyHolder);
+
+        // Handle potential null key
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            throw new RuntimeException("Failed to retrieve generated key after restaurant insert.");
+        }
+        return key.intValue();
+    }
+
+    @Override
+    public int cancelBookingById(int bookingId) {
+        String sqlSoftDeleteQuery = "UPDATE bookings SET status = ? WHERE id = ?";
+        return jdbcTemplate.update(sqlSoftDeleteQuery, BookingStatus.CANCELLED.getStatus(), bookingId);
+    }
+
+    @Override
+    public Booking findBookingById(int bookingId) {
+        String sql = "SELECT * FROM bookings WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), bookingId);
+        } catch (EmptyResultDataAccessException e) {
+            return null; // not found
+        }
+    }
 
     @Override
     public Map<LocalTime, Integer> getBookedCapacityForTimeSlotsForRestaurant(int restaurantId, LocalDate reservationDate, List<LocalTime> timeSlots) {

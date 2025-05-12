@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservation Canceled</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+        .cancellation-icon {
+            text-align: center;
+            font-size: 48px;
+            color: #d32f2f;
+            margin: 20px 0;
+        }
+        .reservation-details {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            width: 140px;
+            font-weight: bold;
+        }
+        .detail-value {
+            flex: 1;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #d32f2f;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo" th:text="${appName}">BookTable</div>
+    </div>
+    
+    <h1>Reservation canceled</h1>
+    
+    <div class="cancellation-icon">✓</div>
+    
+    <p>You've successfully canceled your reservation at <span th:text="${booking.restaurantName}">Restaurant Name</span>.</p>
+    
+    <div class="reservation-details">
+        <div class="detail-row">
+            <div class="detail-label">Restaurant:</div>
+            <div class="detail-value" th:text="${booking.restaurantName}">Restaurant Name</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Date:</div>
+            <div class="detail-value" th:text="${formattedDate}">Monday, January 1, 2023</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Time:</div>
+            <div class="detail-value" th:text="${formattedTime}">7:30 PM</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Party Size:</div>
+            <div class="detail-value" th:text="${booking.partySize} + ' ' + (${booking.partySize} == 1 ? 'person' : 'people')">2 people</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Confirmation #:</div>
+            <div class="detail-value" th:text="${booking.id}">12345</div>
+        </div>
+    </div>
+    
+    <p>We hope to see you another time. You can easily make a new reservation when you're ready.</p>
+    
+    <div class="button-container">
+        <a class="button" href="#" th:href="@{${appBaseUrl}}" target="_blank">Make a new reservation</a>
+    </div>
+    
+    <div class="footer">
+        <p>This email was sent to confirm your reservation cancellation. Please do not reply to this email.</p>
+        <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2023</span> <span th:text="${appName}">BookTable</span>. All rights reserved.</p>
+    </div>
+</body>
+</html> 

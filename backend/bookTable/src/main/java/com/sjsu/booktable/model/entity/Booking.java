@@ -19,11 +19,13 @@ public class Booking {
 
     private int id;
     private int restaurantId;
-    private int customerId;
+    private String restaurantName;
+    private String customerId;
     private Date bookingDate;
     private Time bookingTime;
     private int partySize;
     private String status;
+    private String email;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
