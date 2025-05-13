@@ -35,5 +35,7 @@ public class RestaurantDetailsResponse {
     private Integer bookingCount; // Number of bookings for this restaurant on the current date
 
     private List<ReviewDto> reviews;
+    private double averageRating;
+    private int reviewCount;
 
 }
