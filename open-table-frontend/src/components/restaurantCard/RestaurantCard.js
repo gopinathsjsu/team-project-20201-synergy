@@ -8,6 +8,7 @@ import {
   Chip,
   Button,
   Stack,
+  Rating,
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import dayjs from "dayjs";
@@ -30,6 +31,8 @@ export default function RestaurantCard({
     availableTimeSlots,
     mainPhotoUrl,
     id,
+    averageRating,
+    reviewCount,
   } = restaurant;
 
   const [imageUrl, setImageUrl] = useState("/images/placeholder.png");
@@ -170,6 +173,24 @@ export default function RestaurantCard({
             {distance.toFixed(2)} mi
           </Typography>
         </Stack>
+
+        {/* Rating and Review Count */}
+        {typeof averageRating === 'number' && (
+          <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+            <Rating
+              name="restaurant-rating"
+              value={averageRating}
+              precision={0.5}
+              readOnly
+              size="small"
+            />
+            {typeof reviewCount === 'number' && reviewCount > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
+              </Typography>
+            )}
+          </Stack>
+        )}
 
         {/* Available Slots */}
         <Box

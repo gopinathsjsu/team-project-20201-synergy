@@ -14,6 +14,12 @@ import {
   ImageList,
   ImageListItem,
   CardMedia,
+  Rating,
+  List,
+  ListItem,
+  ListItemText,
+  Avatar,
+  ListItemAvatar,
 } from "@mui/material";
 import dayjs from "dayjs";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -61,6 +67,11 @@ export default function RestaurantPage(props) {
   const [selectedDate, setSelectedDate] = useState(dayjs(bookingDate));
   const [selectedTime, setSelectedTime] = useState("");
   const [totalPerson, setTotalPerson] = useState(2);
+
+  // State for new review
+  const [newReviewRating, setNewReviewRating] = useState(0);
+  const [newReviewComment, setNewReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const fetchRestaurantDetails = async () => {
     setIsLoading(true);
@@ -272,6 +283,9 @@ export default function RestaurantPage(props) {
     latitude,
     operatingHours,
     timeSlots,
+    averageRating,
+    reviewCount,
+    reviews,
   } = restaurant;
 
   // Default placeholder image if no image or error loading
@@ -445,6 +459,23 @@ export default function RestaurantPage(props) {
             {name}
           </Typography>
 
+          {/* Average Rating and Review Count */}
+          {typeof averageRating === 'number' && (
+            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+              <Rating
+                name="restaurant-average-rating"
+                value={averageRating}
+                precision={0.5}
+                readOnly
+              />
+              {typeof reviewCount === 'number' && reviewCount > 0 && (
+                <Typography variant="body1" color="text.secondary">
+                  ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
+                </Typography>
+              )}
+            </Stack>
+          )}
+
           <Stack direction="row" spacing={1} alignItems="center" mb={2}>
             <Chip label={cuisineType} color="primary" size="small" />
             <Chip
@@ -512,6 +543,98 @@ export default function RestaurantPage(props) {
               </AccordionDetails>
             </Accordion>
           ))}
+        </Paper>
+
+        {/* Reviews Section */}
+        <Paper
+          elevation={2}
+          sx={{ borderRadius: 2, p: { xs: 2, md: 3 }, marginTop: 5 }}
+        >
+          <Typography variant="h5" fontWeight={600} gutterBottom mb={2}>
+            Reviews
+          </Typography>
+
+          {/* Review Submission Form */}
+          {isLoggedIn ? (
+            <Box component="form" onSubmit={(e) => {
+              e.preventDefault();
+              // TODO: Handle review submission logic
+              console.log({ rating: newReviewRating, comment: newReviewComment });
+              // setSubmittingReview(true); - call API then reset form
+            }} mb={4}>
+              <Typography variant="subtitle1" fontWeight={500} gutterBottom>
+                Leave a Review
+              </Typography>
+              <Rating
+                name="new-review-rating"
+                value={newReviewRating}
+                onChange={(event, newValue) => {
+                  setNewReviewRating(newValue);
+                }}
+                sx={{ mb: 1 }}
+              />
+              <TextField
+                label="Your review"
+                multiline
+                rows={4}
+                fullWidth
+                value={newReviewComment}
+                onChange={(e) => setNewReviewComment(e.target.value)}
+                variant="outlined"
+                sx={{ mb: 2 }}
+              />
+              <Button 
+                type="submit" 
+                variant="contained" 
+                disabled={submittingReview || newReviewRating === 0}
+              >
+                {submittingReview ? <CircularProgress size={24} /> : "Submit Review"}
+              </Button>
+            </Box>
+          ) : (
+            <Typography variant="body1" color="text.secondary" mb={2}>
+              Please <Button onClick={() => setOpenLoginModal(true)}>log in</Button> to leave a review.
+            </Typography>
+          )}
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* List of Reviews */}
+          {reviews && reviews.length > 0 ? (
+            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+              {reviews.map((review, index) => (
+                <Box key={index}>
+                  <ListItem alignItems="flex-start">
+                    <ListItemAvatar>
+                      <Avatar>{review.user ? review.user.charAt(0) : 'A'}</Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={<Rating name={`review-rating-${index}`} value={review.rating} readOnly size="small" />}
+                      secondaryTypographyProps={{ component: 'div' }}
+                      secondary={(
+                        <>
+                          <Typography
+                            sx={{ display: 'inline' }}
+                            component="span"
+                            variant="body2"
+                            color="text.primary"
+                          >
+                            {review.user || 'Anonymous User'} - {dayjs(review.date).format('MMMM D, YYYY')}
+                          </Typography>
+                          <Typography variant="body1" mt={1}>{review.comment}</Typography>
+                        </>
+                      )}
+                    />
+                  </ListItem>
+                  {index < reviews.length - 1 && <Divider variant="inset" component="li" />}
+                </Box>
+              ))}
+            </List>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              No reviews yet. Be the first to review!
+            </Typography>
+          )}
         </Paper>
       </Box>
     </Box>
