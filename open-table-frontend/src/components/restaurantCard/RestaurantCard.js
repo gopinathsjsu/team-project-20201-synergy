@@ -16,6 +16,9 @@ import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "@/AuthContext/AuthContext";
 import { getPresignedUrls } from "@/utils/imageUtils";
 
+// Fallback image to use only when the actual image fails to load
+const PLACEHOLDER_IMAGE = "/restaurant-image.svg"; 
+
 export default function RestaurantCard({
   restaurant,
   searchPayload,
@@ -32,7 +35,8 @@ export default function RestaurantCard({
     id,
   } = restaurant;
 
-  const [imageUrl, setImageUrl] = useState("/images/placeholder.png");
+  // Initialize with placeholder but try to load the actual image
+  const [imageUrl, setImageUrl] = useState(PLACEHOLDER_IMAGE);
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -43,8 +47,8 @@ export default function RestaurantCard({
 
   // Use presigned URLs passed from parent or fetch individually if needed
   useEffect(() => {
-    // Skip if we've already handled an error or if there's no photo URL
-    if (imageError || !mainPhotoUrl) {
+    // Skip if there's no photo URL or we've already handled an error
+    if (!mainPhotoUrl || imageError) {
       return;
     }
 
@@ -77,11 +81,11 @@ export default function RestaurantCard({
             `RestaurantCard (${name}) - No URL found for image:`,
             mainPhotoUrl
           );
-          setImageUrl("/images/placeholder.png");
+          setImageUrl(PLACEHOLDER_IMAGE);
         }
       } catch (error) {
         console.error(`RestaurantCard (${name}) - Error loading image:`, error);
-        setImageUrl("/images/placeholder.png");
+        setImageUrl(PLACEHOLDER_IMAGE);
         setImageError(true);
       } finally {
         setIsLoading(false);
@@ -128,12 +132,15 @@ export default function RestaurantCard({
         sx={{ objectFit: "cover" }}
         onError={(e) => {
           if (!imageError) {
-            console.error(
-              `RestaurantCard (${name}) - Failed to load image from URL:`,
-              imageUrl
+            console.warn(
+              `RestaurantCard (${name}) - Failed to load image, using fallback for:`,
+              mainPhotoUrl
             );
-            setImageUrl("/images/placeholder.png");
+            setImageUrl(PLACEHOLDER_IMAGE);
             setImageError(true);
+            
+            // Prevent infinite error loops if even the placeholder fails
+            e.target.onerror = null;
           }
         }}
       />
