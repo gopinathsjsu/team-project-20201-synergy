@@ -13,6 +13,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 // Constants
 import { VERIFICATION_TYPE, VERIFICATION_CONFIG } from "./loginForm.constants";
@@ -31,6 +33,11 @@ function LoginForm({ onClose, onChangeCurrentView }) {
   const [validationError, setValidationError] = useState("");
   const [isContinueDisabled, setIsContinueDisabled] = useState(false);
   const [isCtaLoading, setIsCtaLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const currentVerificationConfig = useMemo(
     () => VERIFICATION_CONFIG[verificationType],
@@ -44,6 +51,10 @@ function LoginForm({ onClose, onChangeCurrentView }) {
     if (_trim(value)) {
       setIsContinueDisabled(false);
     }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleSubmit = (event) => {
@@ -64,6 +75,22 @@ function LoginForm({ onClose, onChangeCurrentView }) {
         verificationType,
         verificationInput,
         onChangeCurrentView,
+        onSuccess: () => {
+          setSnackbar({
+            open: true,
+            message: `OTP sent to your ${
+              verificationType === VERIFICATION_TYPE.PHONE ? "phone" : "email"
+            }`,
+            severity: "success",
+          });
+        },
+        onError: (errorMsg) => {
+          setSnackbar({
+            open: true,
+            message: errorMsg || "Failed to send OTP. Please try again.",
+            severity: "error",
+          });
+        },
       });
     }
   };
@@ -133,6 +160,21 @@ function LoginForm({ onClose, onChangeCurrentView }) {
           </Button>
         </div>
       </DialogContent>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

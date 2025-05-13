@@ -17,6 +17,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,6 +95,20 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingRepository.getBookedCapacityForTimeSlotsForRestaurant(restaurantId, reservationDate, timeSlots);
+    }
+
+    @Override
+    public List<BookingResponseDTO> getBookingsByCustomerId(String customerId) {
+        List<Booking> bookings = bookingRepository.findBookingsByCustomerId(customerId);
+        
+        return bookings.stream()
+            .map(booking -> {
+                BookingResponseDTO response = new BookingResponseDTO();
+                response.setBooking(booking);
+                response.setStatus(booking.getStatus());
+                return response;
+            })
+            .collect(Collectors.toList());
     }
 
 }

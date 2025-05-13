@@ -111,4 +111,10 @@ public class BookingRepositoryImpl implements BookingRepository {
         return timeSlotBookedCount;
     }
 
+    @Override
+    public List<Booking> findBookingsByCustomerId(String customerId) {
+        String sql = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY booking_date DESC, booking_time DESC";
+        return jdbcTemplate.query(sql, new BookingRowMapper(), customerId);
+    }
+
 }

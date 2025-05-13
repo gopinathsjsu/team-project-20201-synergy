@@ -3,6 +3,7 @@ package com.sjsu.booktable.controller;
 import com.sjsu.booktable.model.dto.BTResponse;
 import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.dto.booking.BookingResponseDTO;
+import com.sjsu.booktable.model.entity.Booking;
 import com.sjsu.booktable.service.booking.BookingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/booking")
@@ -33,5 +37,16 @@ public class BookingController {
     public ResponseEntity cancelBooking(@PathVariable("bookingId") int bookingId) {
         BookingResponseDTO cancelBookingResponse = bookingService.cancelBooking(bookingId);
         return ResponseEntity.ok(BTResponse.success(cancelBookingResponse));
+    }
+    
+    @GetMapping("/fetch")
+    @PreAuthorize("hasAuthority('Customer')")
+    public ResponseEntity fetchBookings(@AuthenticationPrincipal Jwt jwt) {
+        String customerId = jwt.getSubject();
+        List<BookingResponseDTO> bookingsResponse = bookingService.getBookingsByCustomerId(customerId);
+        List<Booking> bookings = bookingsResponse.stream()
+            .map(BookingResponseDTO::getBooking)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(BTResponse.success(bookings));
     }
 }
