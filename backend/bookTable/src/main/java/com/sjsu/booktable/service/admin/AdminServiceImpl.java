@@ -7,8 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -71,23 +70,30 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public Map<String, Object> getReservationAnalytics() {
         try {
-            LocalDateTime endDate = LocalDateTime.now();
-            LocalDateTime startDate = endDate.minus(1, ChronoUnit.MONTHS);
-            
+            YearMonth currentYearMonth = YearMonth.now();
+            // Start of the current month
+            LocalDateTime startDate = currentYearMonth.atDay(1).atStartOfDay();
+            // End of the current month
+            LocalDateTime endDate = currentYearMonth.atEndOfMonth().atTime(23, 59, 59, 999999999); // End of the last day of the month
+
             int totalReservations = restaurantRepository.getTotalReservations(startDate, endDate);
-            double averageReservationsPerDay = totalReservations > 0 ? totalReservations / 30.0 : 0.0;
-            
+
+            // Number of days in the current month
+            int daysInMonth = currentYearMonth.lengthOfMonth();
+
+            double averageReservationsPerDay = totalReservations > 0 ? (double) totalReservations / daysInMonth : 0.0;
+
             List<Restaurant> popularRestaurants = restaurantRepository.getMostPopularRestaurants(startDate, endDate);
             List<RestaurantResponse> popularRestaurantResponses = popularRestaurants.stream()
                     .map(this::convertToResponse)
                     .collect(Collectors.toList());
-            
+
             return Map.of(
-                "totalReservations", totalReservations,
-                "averageReservationsPerDay", averageReservationsPerDay,
-                "mostPopularRestaurants", popularRestaurantResponses,
-                "startDate", startDate,
-                "endDate", endDate
+                    "totalReservations", totalReservations,
+                    "averageReservationsPerDay", averageReservationsPerDay,
+                    "mostPopularRestaurants", popularRestaurantResponses,
+                    "startDate", startDate,
+                    "endDate", endDate
             );
         } catch (Exception e) {
             log.error("Exception while fetching reservation analytics, ", e);
