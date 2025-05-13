@@ -244,8 +244,10 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<HoursDto> hours = restaurantHoursService.getHoursForRestaurant(restaurantId);
         List<TimeSlotDto> timeSlots = timeSlotService.getTimeSlotsForRestaurant(restaurantId);
 
-        //  Fetch reviews using ReviewService
+        //restaurant reviews
         List<ReviewDto> reviews = reviewService.getReviewsByRestaurantId(restaurantId);
+        double overallAverageRating = reviewService.getAverageRatingByRestaurant(restaurantId);
+        int totalReviewCount = reviews != null ? reviews.size() : 0;
 
         // Extract coordinates safely handling null locations
         Double longitude = null;
@@ -276,6 +278,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .timeSlots(timeSlots)
                 .approved(restaurant.isApproved())
                 .reviews(reviews)
+                .averageRating(overallAverageRating)
+                .reviewCount(totalReviewCount)
                 .build();
     }
 

@@ -34,5 +34,7 @@ public class RestaurantDetailsResponse {
     private boolean approved;
 
     private List<ReviewDto> reviews;
+    private double averageRating;
+    private int reviewCount;
 
 }
