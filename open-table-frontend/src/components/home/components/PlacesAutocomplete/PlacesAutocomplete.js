@@ -29,18 +29,21 @@ function PlacesAutocomplete({ onLocationChange, onSearchChange }) {
       inputRef={ref}
       required
       onChange={(e) => {
-        onSearchChange(e.target.value);
+        const value = e.target?.value || "";
+        onSearchChange(value);
       }}
     />
   );
 }
 
 PlacesAutocomplete.propTypes = {
-  onLocationChange: PropTypes.function,
+  onLocationChange: PropTypes.func,
+  onSearchChange: PropTypes.func,
 };
 
 PlacesAutocomplete.defaultProps = {
   onLocationChange: () => {},
+  onSearchChange: () => {},
 };
 
 export default PlacesAutocomplete;
