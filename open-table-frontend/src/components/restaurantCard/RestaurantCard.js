@@ -16,7 +16,11 @@ import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "@/AuthContext/AuthContext";
 import { getPresignedUrls } from "@/utils/imageUtils";
 
-export default function RestaurantCard({ restaurant, searchPayload, presignedUrls = {} }) {
+export default function RestaurantCard({
+  restaurant,
+  searchPayload,
+  presignedUrls = {},
+}) {
   const {
     name,
     address,
@@ -43,7 +47,7 @@ export default function RestaurantCard({ restaurant, searchPayload, presignedUrl
     if (imageError || !mainPhotoUrl) {
       return;
     }
-    
+
     const loadImage = async () => {
       try {
         // First check if URL is already in the presignedUrls prop
@@ -54,19 +58,25 @@ export default function RestaurantCard({ restaurant, searchPayload, presignedUrl
             return;
           }
         }
-        
+
         // Only fetch individually if we're not already loading and not in parent props
         if (isLoading) return;
-        
+
         setIsLoading(true);
-        console.log(`RestaurantCard (${name}) - Fetching image URL individually for:`, mainPhotoUrl);
+        console.log(
+          `RestaurantCard (${name}) - Fetching image URL individually for:`,
+          mainPhotoUrl
+        );
         const urls = await getPresignedUrls([mainPhotoUrl]);
-        
+
         if (urls && urls[mainPhotoUrl]) {
           setImageUrl(urls[mainPhotoUrl]);
           setImageError(false);
         } else {
-          console.warn(`RestaurantCard (${name}) - No URL found for image:`, mainPhotoUrl);
+          console.warn(
+            `RestaurantCard (${name}) - No URL found for image:`,
+            mainPhotoUrl
+          );
           setImageUrl("/images/placeholder.png");
         }
       } catch (error) {
@@ -77,7 +87,7 @@ export default function RestaurantCard({ restaurant, searchPayload, presignedUrl
         setIsLoading(false);
       }
     };
-    
+
     loadImage();
   }, [mainPhotoUrl, presignedUrls, name, imageError, isLoading]);
 
@@ -92,6 +102,8 @@ export default function RestaurantCard({ restaurant, searchPayload, presignedUrl
         date,
         time: timeSlot,
         partySize,
+        restaurantName: name,
+        restaurantId: id,
       },
     });
   };
@@ -116,7 +128,10 @@ export default function RestaurantCard({ restaurant, searchPayload, presignedUrl
         sx={{ objectFit: "cover" }}
         onError={(e) => {
           if (!imageError) {
-            console.error(`RestaurantCard (${name}) - Failed to load image from URL:`, imageUrl);
+            console.error(
+              `RestaurantCard (${name}) - Failed to load image from URL:`,
+              imageUrl
+            );
             setImageUrl("/images/placeholder.png");
             setImageError(true);
           }
@@ -198,9 +213,9 @@ export default function RestaurantCard({ restaurant, searchPayload, presignedUrl
                 `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
             },
           }}
-          href={`/restaurant/${id}?bookingDate=${date || dayjs()}&bookingTime=${
-            time || "20:00"
-          }&partySize=${partySize || 2}`}
+          href={`/restaurant/${id}?restaurantName=${name}&bookingDate=${
+            date || dayjs()
+          }&bookingTime=${time || "20:00"}&partySize=${partySize || 2}`}
         >
           Book Now
         </Button>

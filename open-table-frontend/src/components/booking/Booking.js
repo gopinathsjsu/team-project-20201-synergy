@@ -11,19 +11,10 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import WcTwoToneIcon from "@mui/icons-material/WcTwoTone";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { TextField, Button } from "@mui/material";
+import { TextField, Button, Snackbar, Alert } from "@mui/material";
 import axios from "axios";
 
 dayjs.extend(customParseFormat);
-
-const isValidPhone = (phone) => {
-  if (!phone) {
-    return false;
-  }
-  const usPhoneRegex =
-    /^(?:\+?1[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})(?:[-.\s]?x\d+)?$/;
-  return usPhoneRegex.test(phone);
-};
 
 const isValidEmail = (email) => {
   if (!email) {
@@ -34,11 +25,15 @@ const isValidEmail = (email) => {
 };
 
 const Booking = () => {
-  const [ctaText, setCtaText] = useState("phone");
   const [formattedDateTime, setFormattedDateTime] = useState(null);
   const [error, setError] = useState("");
-  const [dinerDetail, setDinerDetail] = useState("");
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const router = useRouter();
   const { query } = router;
   // Destructure query parameters, adding type checks for robustness
@@ -55,11 +50,16 @@ const Booking = () => {
 
   useEffect(() => {
     if (date && time && typeof date === "string" && typeof time === "string") {
-      const dateTimeString = `${date}T${time}`;
+      // Parse the date which is in YYYY-DD-MM format
+      const [year, day, month] = date.split("-");
+      // Reformat to YYYY-MM-DD for dayjs
+      const formattedDate = `${year}-${month}-${day}`;
+      const dateTimeString = `${formattedDate}T${time}`;
       const bookingDateTime = dayjs(dateTimeString);
 
       if (bookingDateTime.isValid()) {
-        const displayFormat = "MMMM D, YYYY at h:mm A";
+        // Escaping the word "at" with square brackets so dayjs doesn't interpret it as tokens
+        const displayFormat = "MMMM D, YYYY [at] h:mm A";
         setFormattedDateTime(bookingDateTime.format(displayFormat));
         console.log(
           "Formatted Date/Time for UI:",
@@ -75,20 +75,21 @@ const Booking = () => {
     }
   }, [router.query, date, time]);
 
-  const handleDinerDetail = (e) => {
+  const handleEmailChange = (e) => {
     const value = e.target?.value;
     setError("");
-    setDinerDetail(_trim(value));
+    setEmail(_trim(value));
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const handleConfirmBooking = async () => {
-    if (_isEmpty(dinerDetail)) {
-      setError(`Missing diner detail`);
+    if (_isEmpty(email)) {
+      setError(`Email is required`);
       return;
-    } else if (ctaText === "phone" && !isValidPhone(dinerDetail)) {
-      setError(`Phone number is invalid`);
-      return;
-    } else if (ctaText === "email" && !isValidEmail(dinerDetail)) {
+    } else if (!isValidEmail(email)) {
       setError("Email is invalid");
       return;
     }
@@ -100,23 +101,45 @@ const Booking = () => {
     }
     setError("");
     setIsLoading(true);
+
+    // Format the date correctly before sending to API
+    const [year, day, month] = date.split("-");
+    const formattedDate = `${year}-${month}-${day}`;
+
     const bookingPayload = {
       restaurantId,
-      bookingDate: date,
+      restaurantName,
+      bookingDate: formattedDate, // Use the correctly formatted date
       bookingTime: time,
       partySize,
-      notifierType: ctaText,
-      notifierValue: dinerDetail,
+      email: email,
     };
     try {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/booking/create`;
-      const response = axios.post(url, bookingPayload, {
+      const response = await axios.post(url, bookingPayload, {
         withCredentials: true,
       });
       console.log(response?.data?.data);
+
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: "Booking confirmed successfully!",
+        severity: "success",
+      });
+
+      // Redirect to home page after a short delay
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
     } catch (err) {
       console.log(err.message);
       setError(`An unexpected error occurred: ${err.message}`);
+      setSnackbar({
+        open: true,
+        message: `Booking failed: ${err.message}`,
+        severity: "error",
+      });
     }
     setIsLoading(false);
   };
@@ -174,27 +197,18 @@ const Booking = () => {
       </Box>
       <Box marginTop={3}>
         <Typography variant="h6" fontWeight="bold">
-          Diner details
+          Contact Information
         </Typography>
         <TextField
           fullWidth
-          onChange={handleDinerDetail} // Use the corrected handler
-          label={`Enter ${ctaText}`} // Label changes based on ctaText
-          value={dinerDetail} // Bind value to state
+          onChange={handleEmailChange}
+          label="Enter your email"
+          value={email}
           margin="normal"
-          type={ctaText === "email" ? "email" : "tel"} // Use appropriate input type
-          error={!!error} // Set error prop based on error state
-          helperText={error} // Display error message below the field
+          type="email"
+          error={!!error}
+          helperText={error}
         />
-        <Button
-          onClick={() => {
-            setDinerDetail("");
-            setError(null);
-            setCtaText(ctaText === "email" ? "phone" : "email");
-          }}
-        >
-          {ctaText === "phone" ? "Use email instead" : "Use phone instead"}
-        </Button>
       </Box>
       <Button
         variant="contained"
@@ -217,10 +231,25 @@ const Booking = () => {
           },
         }}
         loading={isLoading}
-        disabled={isLoading || _isEmpty(dinerDetail)}
+        disabled={isLoading || _isEmpty(email)}
       >
         Complete Reservation
       </Button>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 };

@@ -18,4 +18,6 @@ public interface BookingRepository {
     int cancelBookingById(int bookingId);
 
     Booking findBookingById(int bookingId);
+    
+    List<Booking> findBookingsByCustomerId(String customerId);
 }

@@ -20,7 +20,13 @@ const testApi = () => {
 
 export const handleOTPSend = async (
   setIsLoading,
-  { verificationType, verificationInput, onChangeCurrentView }
+  {
+    verificationType,
+    verificationInput,
+    onChangeCurrentView,
+    onSuccess,
+    onError,
+  }
 ) => {
   const req = {
     identifier: verificationType,
@@ -33,9 +39,21 @@ export const handleOTPSend = async (
     const response = await axios.post(url, req, { withCredentials: true });
     const resData = response?.data?.data;
     console.log("OTP sent successfully...");
+
+    // Call success callback if provided
+    if (typeof onSuccess === "function") {
+      onSuccess();
+    }
+
     onChangeCurrentView({ ...req, ...resData });
   } catch (error) {
     console.log(error);
+
+    // Call error callback if provided
+    if (typeof onError === "function") {
+      const errorMessage = error.response?.data?.message || error.message;
+      onError(errorMessage);
+    }
   }
   setIsLoading(false);
 };
