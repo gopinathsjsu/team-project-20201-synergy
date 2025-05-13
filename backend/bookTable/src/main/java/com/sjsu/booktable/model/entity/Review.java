@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "ratings_reviews")
+@Table(name = "reviews")
 public class Review {
 
     private int id;
