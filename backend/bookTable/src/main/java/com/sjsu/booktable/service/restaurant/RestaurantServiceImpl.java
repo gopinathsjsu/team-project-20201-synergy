@@ -7,10 +7,12 @@ import com.sjsu.booktable.model.dto.restaurantSearch.NearbyRestaurantRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchDetails;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchResponse;
+import com.sjsu.booktable.model.dto.review.ReviewDto;
 import com.sjsu.booktable.model.entity.Photo;
 import com.sjsu.booktable.model.entity.Restaurant;
 import com.sjsu.booktable.repository.RestaurantRepository;
 import com.sjsu.booktable.service.booking.BookingService;
+import com.sjsu.booktable.service.review.ReviewService;
 import com.sjsu.booktable.service.s3.S3Service;
 import com.sjsu.booktable.utils.ListUtils;
 import com.sjsu.booktable.utils.StringUtils;
@@ -42,6 +44,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final GoogleMapsService googleMapsService;
     private final BookingService bookingService;
     private final RestaurantValidator validator;
+    private final ReviewService reviewService;
 
     private static final int SLOT_TOLERANCE_MINUTES = 30;
     private final S3Service s3Service;
@@ -141,6 +144,11 @@ public class RestaurantServiceImpl implements RestaurantService {
                 }
 
                 nearbyRestaurant.setAvailableTimeSlots(availableTimeSlots);
+
+                // fetch ratings
+                double avgRating = reviewService.getAverageRatingByRestaurant(restaurantId);
+                nearbyRestaurant.setAvgRating(avgRating);
+
                 availableRestaurants.add(nearbyRestaurant);
             }
 
@@ -187,6 +195,10 @@ public class RestaurantServiceImpl implements RestaurantService {
                 }
 
                 nearbyRestaurant.setAvailableTimeSlots(availableTimeSlots);
+
+                // fetch ratings
+                double avgRating = reviewService.getAverageRatingByRestaurant(restaurantId);
+                nearbyRestaurant.setAvgRating(avgRating);
                 availableRestaurants.add(nearbyRestaurant);
             }
 
@@ -232,6 +244,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<HoursDto> hours = restaurantHoursService.getHoursForRestaurant(restaurantId);
         List<TimeSlotDto> timeSlots = timeSlotService.getTimeSlotsForRestaurant(restaurantId);
 
+        //  Fetch reviews using ReviewService
+        List<ReviewDto> reviews = reviewService.getReviewsByRestaurantId(restaurantId);
+
         // Extract coordinates safely handling null locations
         Double longitude = null;
         Double latitude = null;
@@ -260,6 +275,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .operatingHours(hours)
                 .timeSlots(timeSlots)
                 .approved(restaurant.isApproved())
+                .reviews(reviews)
                 .build();
     }
 

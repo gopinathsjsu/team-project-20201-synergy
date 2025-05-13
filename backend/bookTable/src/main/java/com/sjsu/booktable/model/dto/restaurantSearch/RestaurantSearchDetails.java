@@ -18,4 +18,6 @@ public class RestaurantSearchDetails {
     private List<String> availableTimeSlots;
     private Boolean approved;
 
+    private double avgRating;
+
 }
