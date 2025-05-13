@@ -10,10 +10,11 @@ import com.sjsu.booktable.model.entity.User;
 import com.sjsu.booktable.service.auth.AuthService;
 import com.sjsu.booktable.service.user.UserService;
 import com.sjsu.booktable.utils.StringUtils;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,14 +40,16 @@ public class AuthController {
 
         if(!StringUtils.isBlank(verifyResponse.getAccessToken())) {
             // Set access token in HTTP-only cookie
-            Cookie tokenCookie = new Cookie("api-token", verifyResponse.getAccessToken());
-            tokenCookie.setHttpOnly(true);
-            tokenCookie.setPath("/"); // Cookie available for all routes
-            tokenCookie.setMaxAge(10800); // Match token expiry, e.g., 3 hour
-            tokenCookie.setSecure(true);
-            response.addCookie(tokenCookie);
-        }
+            ResponseCookie tokenCookie = ResponseCookie.from("api-token", verifyResponse.getAccessToken())
+                    .httpOnly(true)
+                    .path("/") // Cookie available for all routes
+                    .maxAge(10800) // Match token expiry, e.g., 3 hour
+                    .secure(true)
+                    .sameSite("None")
+                    .build();
 
+            response.addHeader(HttpHeaders.SET_COOKIE, tokenCookie.toString());
+        }
         return ResponseEntity.ok(BTResponse.success(verifyResponse));
     }
 
@@ -60,13 +63,15 @@ public class AuthController {
         authService.logout(token);
 
         // Clear the cookie on logout
-        Cookie clearCookie = new Cookie("api-token", null);
-        clearCookie.setHttpOnly(true);
-        clearCookie.setPath("/");
-        clearCookie.setMaxAge(0); // Delete cookie
-        clearCookie.setSecure(true);
-        response.addCookie(clearCookie);
+        ResponseCookie clearCookie = ResponseCookie.from("api-token", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0) // Delete cookie
+                .secure(true)
+                .sameSite("None")
+                .build();
 
+        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
         return ResponseEntity.ok(BTResponse.success("Logged out successfully"));
     }
 

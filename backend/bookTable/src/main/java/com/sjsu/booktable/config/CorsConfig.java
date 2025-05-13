@@ -16,9 +16,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(@NotNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                                "http://localhost:3000",
-                                "http://booktable-app-env.eba-wxmsfivd.us-west-1.elasticbeanstalk.com")
+                        .allowedOrigins("http://localhost:3000")
                         .allowedMethods(
                                 HttpMethod.GET.name(),
                                 HttpMethod.POST.name(),
