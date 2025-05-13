@@ -7,6 +7,7 @@ import com.sjsu.booktable.model.dto.restaurantSearch.NearbyRestaurantRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchRequest;
 import com.sjsu.booktable.model.dto.restaurantSearch.RestaurantSearchResponse;
 
+
 public interface RestaurantService {
 
     RestaurantResponse addRestaurant(RestaurantRequest restaurantRequest, String managerId);

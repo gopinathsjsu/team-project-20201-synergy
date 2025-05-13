@@ -1,5 +1,6 @@
 package com.sjsu.booktable.model.dto.restaurant;
 
+import com.sjsu.booktable.model.dto.review.ReviewDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -31,5 +32,7 @@ public class RestaurantDetailsResponse {
     // Specific time slots as defined by TimeSlotDTO for each day
     private List<TimeSlotDto> timeSlots;
     private boolean approved;
+
+    private List<ReviewDto> reviews;
 
 }
