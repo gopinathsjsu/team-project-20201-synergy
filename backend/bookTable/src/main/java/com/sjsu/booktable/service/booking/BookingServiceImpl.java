@@ -123,16 +123,16 @@ public class BookingServiceImpl implements BookingService {
         // Check if any booking time is within +/- 1 hour of the requested time
         LocalTime oneHourBefore = bookingTime.minusHours(1);
         LocalTime oneHourAfter = bookingTime.plusHours(1);
-        Booking conflictBooking = bookingRepository.findBookingWithConflict(customerId, bookingDate, oneHourBefore, oneHourAfter);
+        Booking conflictingBooking = bookingRepository.findBookingWithConflict(customerId, bookingDate, oneHourBefore, oneHourAfter);
 
         BookingConflictResponseDto conflictResponse = new BookingConflictResponseDto();
-        if (conflictBooking == null) {
+        if (conflictingBooking == null) {
             conflictResponse.setHasConflict(false);
             return conflictResponse;
         }
 
         conflictResponse.setHasConflict(true);
-        conflictResponse.setConflictBooking(conflictBooking);
+        conflictResponse.setConflictingBooking(conflictingBooking);
         return conflictResponse;
     }
 }

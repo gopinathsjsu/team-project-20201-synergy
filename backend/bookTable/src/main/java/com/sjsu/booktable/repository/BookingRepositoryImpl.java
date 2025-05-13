@@ -119,8 +119,17 @@ public class BookingRepositoryImpl implements BookingRepository {
 
     @Override
     public Booking findBookingWithConflict(String customerId, LocalDate reservationDate, LocalTime fromTime, LocalTime toTime) {
-        String sql = "SELECT * FROM bookings WHERE customer_id = ? AND booking_date = ? AND booking_time BETWEEN ? AND ? AND status != cancelled";
-        return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), customerId, Date.valueOf(reservationDate), Time.valueOf(fromTime), Time.valueOf(toTime));
+        String sql = "SELECT * FROM bookings WHERE customer_id = ? AND booking_date = ? AND booking_time BETWEEN ? AND ? AND status != ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), 
+                customerId, 
+                Date.valueOf(reservationDate), 
+                Time.valueOf(fromTime), 
+                Time.valueOf(toTime),
+                BookingStatus.CANCELLED.getStatus());
+        } catch (Exception e) {
+            return null; // No conflicts found
+        }
     }
 
 }

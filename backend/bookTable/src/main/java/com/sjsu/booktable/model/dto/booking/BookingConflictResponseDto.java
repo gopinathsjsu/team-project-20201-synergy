@@ -7,5 +7,5 @@ import lombok.Data;
 public class BookingConflictResponseDto {
 
     private boolean hasConflict;
-    private Booking conflictBooking;
+    private Booking conflictingBooking;
 }
