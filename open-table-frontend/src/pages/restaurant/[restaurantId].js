@@ -540,7 +540,10 @@ export default function RestaurantPage(props) {
             {operatingHours?.map((oh) => (
               <Typography key={oh.dayOfWeek} variant="body2">
                 <strong>{WEEK_DAYS[oh.dayOfWeek]}:</strong>{" "}
-                {oh.openTime.slice(0, 5)} – {oh.closeTime.slice(0, 5)}
+                {oh.openTime && oh.closeTime 
+                  ? `${oh.openTime.slice(0, 5)} – ${oh.closeTime.slice(0, 5)}`
+                  : "Closed"
+                }
               </Typography>
             ))}
           </Stack>
@@ -558,18 +561,24 @@ export default function RestaurantPage(props) {
               </AccordionSummary>
               <AccordionDetails>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {daySlot.times.map((t) => (
-                    <Chip
-                      key={t}
-                      label={t.slice(0, 5)}
-                      size="small"
-                      sx={{
-                        bgcolor: "primary.light",
-                        color: "primary.dark",
-                        fontWeight: 500,
-                      }}
-                    />
-                  ))}
+                  {daySlot.times && daySlot.times.length > 0 ? (
+                    daySlot.times.map((t) => (
+                      <Chip
+                        key={t}
+                        label={t.slice(0, 5)}
+                        size="small"
+                        sx={{
+                          bgcolor: "primary.light",
+                          color: "primary.dark",
+                          fontWeight: 500,
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No available time slots
+                    </Typography>
+                  )}
                 </Stack>
               </AccordionDetails>
             </Accordion>
@@ -585,49 +594,6 @@ export default function RestaurantPage(props) {
             Reviews
           </Typography>
 
-          {/* Review Submission Form */}
-          {isLoggedIn ? (
-            <Box component="form" onSubmit={(e) => {
-              e.preventDefault();
-              // TODO: Handle review submission logic
-              console.log({ rating: newReviewRating, comment: newReviewComment });
-              // setSubmittingReview(true); - call API then reset form
-            }} mb={4}>
-              <Typography variant="subtitle1" fontWeight={500} gutterBottom>
-                Leave a Review
-              </Typography>
-              <Rating
-                name="new-review-rating"
-                value={newReviewRating}
-                onChange={(event, newValue) => {
-                  setNewReviewRating(newValue);
-                }}
-                sx={{ mb: 1 }}
-              />
-              <TextField
-                label="Your review"
-                multiline
-                rows={4}
-                fullWidth
-                value={newReviewComment}
-                onChange={(e) => setNewReviewComment(e.target.value)}
-                variant="outlined"
-                sx={{ mb: 2 }}
-              />
-              <Button 
-                type="submit" 
-                variant="contained" 
-                disabled={submittingReview || newReviewRating === 0}
-              >
-                {submittingReview ? <CircularProgress size={24} /> : "Submit Review"}
-              </Button>
-            </Box>
-          ) : (
-            <Typography variant="body1" color="text.secondary" mb={2}>
-              Please <Button onClick={() => setOpenLoginModal(true)}>log in</Button> to leave a review.
-            </Typography>
-          )}
-
           <Divider sx={{ my: 2 }} />
 
           {/* List of Reviews */}
@@ -637,7 +603,7 @@ export default function RestaurantPage(props) {
                 <Box key={index}>
                   <ListItem alignItems="flex-start">
                     <ListItemAvatar>
-                      <Avatar>{review.user ? review.user.charAt(0) : 'A'}</Avatar>
+                      <Avatar>{review.userName ? review.userName.charAt(0) : 'A'}</Avatar>
                     </ListItemAvatar>
                     <ListItemText
                       primary={<Rating name={`review-rating-${index}`} value={review.rating} readOnly size="small" />}
@@ -650,9 +616,9 @@ export default function RestaurantPage(props) {
                             variant="body2"
                             color="text.primary"
                           >
-                            {review.user || 'Anonymous User'} - {dayjs(review.date).format('MMMM D, YYYY')}
+                            {review.userName || 'Anonymous User'} - {dayjs(review.createdAt).format('MMMM D, YYYY')}
                           </Typography>
-                          <Typography variant="body1" mt={1}>{review.comment}</Typography>
+                          <Typography variant="body1" mt={1}>{review.reviewText}</Typography>
                         </>
                       )}
                     />
