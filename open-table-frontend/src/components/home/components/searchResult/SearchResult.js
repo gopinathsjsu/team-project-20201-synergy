@@ -13,7 +13,7 @@ function SearchResult({ restaurantList, searchPayload, presignedUrls = {} }) {
   const hasResults = Array.isArray(restaurantList) && restaurantList.length > 0;
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" id="search-results-section">
       <Box
         pt={{ xs: 3, md: 4 }}
         pb={{ xs: 2, md: 3 }}

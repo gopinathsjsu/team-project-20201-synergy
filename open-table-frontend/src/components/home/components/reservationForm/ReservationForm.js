@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import _debounce from "lodash/debounce";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -25,7 +25,10 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
   const [selectedTime, setSelectedTime] = useState("20:00");
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [personCount, setPersonCount] = useState(2);
-  const [searchText, setSearchText] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const searchResultsRef = useRef(null);
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -46,12 +49,66 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
   };
 
   const handleLocationChange = (place) => {
-    setSearchText(null);
+    setSearchText("");
     setSelectedLocation(place);
   };
 
+  // Function to create a location object similar to what Google Places would return
+  const createLocationFromCoords = (latitude, longitude) => {
+    return {
+      geometry: {
+        location: {
+          lat: () => latitude,
+          lng: () => longitude,
+        },
+      },
+      formatted_address: "Current Location",
+      name: "Current Location",
+    };
+  };
+
+  // Get user's current location
+  const getCurrentLocation = () => {
+    setIsLocating(true);
+    setLocationError("");
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("Current location detected:", latitude, longitude);
+
+          // Create a location object from the coordinates
+          const locationObj = createLocationFromCoords(latitude, longitude);
+          setSelectedLocation(locationObj);
+
+          // Set the search text to "Current Location"
+          setSearchText("Current Location");
+
+          setIsLocating(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error.message);
+          setLocationError(`Couldn't get your location: ${error.message}`);
+          setIsLocating(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    } else {
+      setLocationError("Geolocation is not supported by your browser");
+      setIsLocating(false);
+    }
+  };
+
   useEffect(() => {
-    setSearchText(null);
+    setSearchText("");
+
+    // Try to get the current location when component mounts
+    getCurrentLocation();
   }, []);
 
   const disablePastDates = (date) => {
@@ -69,25 +126,86 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
   };
 
   const handleSearchChange = (searchText) => {
-    setSearchText(searchText);
+    // Ensure searchText is always a string
+    setSearchText(searchText || "");
+  };
+
+  const scrollToSearchResults = () => {
+    // More robust approach to scroll to search results with multiple attempts
+    console.log("Attempting to scroll to search results...");
+
+    const attemptScroll = (attemptNumber = 1, maxAttempts = 5) => {
+      // Find the search results section
+      const searchResultsSection = document.getElementById(
+        "search-results-section"
+      );
+
+      if (searchResultsSection) {
+        console.log(
+          `Found search results section on attempt ${attemptNumber}, scrolling now`
+        );
+
+        // Use both scrollIntoView and manual scroll for better compatibility
+        searchResultsSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
+        // Also use window.scrollTo as a fallback
+        const rect = searchResultsSection.getBoundingClientRect();
+        const scrollTop =
+          window.pageYOffset || document.documentElement.scrollTop;
+        const targetY = rect.top + scrollTop - 50; // 50px offset from top
+
+        window.scrollTo({
+          top: targetY,
+          behavior: "smooth",
+        });
+
+        return true;
+      } else if (attemptNumber < maxAttempts) {
+        console.log(
+          `Search results section not found on attempt ${attemptNumber}, trying again in 300ms`
+        );
+        // Try again with increased delay
+        const nextDelay = 300 * attemptNumber;
+        setTimeout(() => attemptScroll(attemptNumber + 1), nextDelay);
+        return false;
+      } else {
+        console.error(
+          "Failed to find search results section after multiple attempts"
+        );
+        return false;
+      }
+    };
+
+    // Start the first attempt with a base delay
+    setTimeout(() => attemptScroll(), 200);
   };
 
   const handleReservationSubmit = () => {
-    if (!selectedLocation) return null;
+    if (!selectedLocation && !searchText) return null;
     const formattedSelectedDate = selectedDate.format("YYYY-MM-DD");
     // const formattedSelectedTime = selectedTime.format("HH:mm:ss");
     const lat = selectedLocation?.geometry?.location?.lat();
     const lng = selectedLocation?.geometry?.location?.lng();
+
+    // Ensure searchText is a string, not null
+    const safeSearchText = searchText || "";
+
     const req = {
       date: formattedSelectedDate,
       time: selectedTime,
       partySize: personCount,
       latitude: lat,
       longitude: lng,
-      searchText,
+      searchText: safeSearchText,
     };
-    // const url = `${process.env.NEXT_PUBLIC_BASE_URL}/api/customer/restaurants/search`;
+
     onSearchSubmit(req);
+
+    // Delay scroll attempt to allow time for results to load and DOM to update
+    scrollToSearchResults();
   };
 
   return (
@@ -110,7 +228,7 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
           m={3}
           gap={2}
           sx={{
-            bgcolor: "background.paper", // crisp white “card”
+            bgcolor: "background.paper", // crisp white "card"
             borderRadius: 2,
             p: 3,
           }}
@@ -121,6 +239,7 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
             value={selectedDate}
             onChange={handleDateChange}
             shouldDisableDate={disablePastDates}
+            selectedDate={selectedDate}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -145,6 +264,7 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
             label="Booking Time"
             value={selectedTime}
             onChange={(e) => handleTimeChange(e.target.value)}
+            selectedDate={selectedDate.format("YYYY-MM-DD")}
             sx={{
               "& .MuiOutlinedInput-root fieldset": {
                 borderColor: "primary.main",
@@ -160,7 +280,7 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
             onChange={handlePersonCount}
             value={personCount}
             sx={{
-              minWidth: 120,
+              minWidth: 160,
               "& .MuiOutlinedInput-root fieldset": {
                 borderColor: "primary.main",
               },
@@ -190,11 +310,12 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
             }}
           />
 
-          {/* Gradient “Let’s Go” button */}
+          {/* Gradient "Let's Go" button */}
           <Button
             onClick={handleReservationSubmit}
             variant="contained"
             endIcon={<SendSharpIcon />}
+            disabled={isLocating}
             sx={{
               background: (theme) =>
                 `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -205,10 +326,19 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
               },
             }}
           >
-            Let’s Go
+            Let&apos;s Go
           </Button>
         </Box>
       </LocalizationProvider>
+      {locationError && (
+        <Typography
+          variant="caption"
+          color="error"
+          sx={{ mt: 1, display: "block", textAlign: "center" }}
+        >
+          {locationError}
+        </Typography>
+      )}
     </Box>
   );
 }
