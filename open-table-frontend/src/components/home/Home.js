@@ -1,4 +1,5 @@
 import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
 import NearbySuggestion from "./components/nearbySuggestions/NearbySuggestion";
 import ReservationForm from "./components/reservationForm/ReservationForm";
 import SearchResult from "./components/searchResult/SearchResult";
@@ -21,7 +22,7 @@ function Home(props) {
   const [searchError, setSearchError] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchPayload, setSearchPayload] = useState({
-    date: dayjs().format("YYYY-DD-MM"),
+    date: dayjs().format("YYYY-MM-DD"),
     time: "20:00",
     partySize: 2,
   });
@@ -35,42 +36,52 @@ function Home(props) {
   } = useNearbySuggestions();
 
   // Memoized function to fetch presigned URLs
-  const fetchPresignedUrlsBatch = useCallback(async (restaurantList) => {
-    if (!restaurantList || restaurantList.length === 0 || isLoadingUrls) return;
-    
-    try {
-      setIsLoadingUrls(true);
-      
-      // Extract all image keys
-      const imageKeys = restaurantList
-        .map(restaurant => restaurant.mainPhotoUrl)
-        .filter(Boolean);
-      
-      if (imageKeys.length === 0) {
-        setIsLoadingUrls(false);
+  const fetchPresignedUrlsBatch = useCallback(
+    async (restaurantList) => {
+      if (!restaurantList || restaurantList.length === 0 || isLoadingUrls)
         return;
-      }
-      
-      console.log("Home - Fetching presigned URLs for restaurant images:", imageKeys.length);
-      const urls = await getPresignedUrls(imageKeys);
-      console.log("Home - Received presigned URLs:", Object.keys(urls).length);
-      
-      setPresignedUrls(prevUrls => {
-        // Only add new URLs, don't replace existing ones
-        const updatedUrls = { ...prevUrls };
-        Object.entries(urls).forEach(([key, url]) => {
-          if (url && !updatedUrls[key]) {
-            updatedUrls[key] = url;
-          }
+
+      try {
+        setIsLoadingUrls(true);
+
+        // Extract all image keys
+        const imageKeys = restaurantList
+          .map((restaurant) => restaurant.mainPhotoUrl)
+          .filter(Boolean);
+
+        if (imageKeys.length === 0) {
+          setIsLoadingUrls(false);
+          return;
+        }
+
+        console.log(
+          "Home - Fetching presigned URLs for restaurant images:",
+          imageKeys.length
+        );
+        const urls = await getPresignedUrls(imageKeys);
+        console.log(
+          "Home - Received presigned URLs:",
+          Object.keys(urls).length
+        );
+
+        setPresignedUrls((prevUrls) => {
+          // Only add new URLs, don't replace existing ones
+          const updatedUrls = { ...prevUrls };
+          Object.entries(urls).forEach(([key, url]) => {
+            if (url && !updatedUrls[key]) {
+              updatedUrls[key] = url;
+            }
+          });
+          return updatedUrls;
         });
-        return updatedUrls;
-      });
-    } catch (error) {
-      console.error("Error batch fetching presigned URLs:", error);
-    } finally {
-      setIsLoadingUrls(false);
-    }
-  }, [isLoadingUrls]);
+      } catch (error) {
+        console.error("Error batch fetching presigned URLs:", error);
+      } finally {
+        setIsLoadingUrls(false);
+      }
+    },
+    [isLoadingUrls]
+  );
 
   // Effect to fetch URLs for nearby suggestions
   useEffect(() => {
@@ -125,6 +136,47 @@ function Home(props) {
         onSearchChange={handleSearchPayload}
       />
       <Divider />
+      <Box
+        component="header"
+        sx={(theme) => ({
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+          color: "#fff",
+          textAlign: "center",
+          py: { xs: 6, md: 12 },
+          px: { xs: 2, md: 4 },
+        })}
+      >
+        <Typography
+          variant="h2"
+          component="h1"
+          gutterBottom
+          sx={{
+            fontWeight: 700,
+            letterSpacing: "0.05em",
+            lineHeight: 1.2,
+            mb: 2,
+          }}
+        >
+          Welcome to BookTable
+        </Typography>
+
+        <Typography
+          variant="h6"
+          component="p"
+          sx={{
+            maxWidth: 600,
+            mx: "auto",
+            mb: 4,
+            fontWeight: 500,
+            opacity: 0.9,
+            lineHeight: 1.4,
+          }}
+        >
+          Enjoy booking tables at your favorite local restaurants with ease. Use
+          our specialized filters to refine your search and plan your dining
+          experience.
+        </Typography>
+      </Box>
       {displayMode === DISPLAY_MODE.SUGGESTIONS ? (
         isLoading ? (
           loader

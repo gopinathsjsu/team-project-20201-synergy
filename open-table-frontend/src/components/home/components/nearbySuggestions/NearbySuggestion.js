@@ -3,51 +3,14 @@ import _size from "lodash/size";
 import styles from "./nearbySuggestions.module.scss";
 import RestaurantCard from "@/components/restaurantCard";
 
-function NearbySuggestion({ restaurantList, searchPayload, presignedUrls = {} }) {
+function NearbySuggestion({
+  restaurantList,
+  searchPayload,
+  presignedUrls = {},
+}) {
   if (!_size(restaurantList)) return <h2>No restaurants found...</h2>;
   return (
     <div className={styles.welcomeContainer}>
-      <Box
-        component="header"
-        sx={(theme) => ({
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-          color: "#fff",
-          textAlign: "center",
-          py: { xs: 6, md: 12 },
-          px: { xs: 2, md: 4 },
-        })}
-      >
-        <Typography
-          variant="h2"
-          component="h1"
-          gutterBottom
-          sx={{
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-            lineHeight: 1.2,
-            mb: 2,
-          }}
-        >
-          Welcome to BookTable
-        </Typography>
-
-        <Typography
-          variant="h6"
-          component="p"
-          sx={{
-            maxWidth: 600,
-            mx: "auto",
-            mb: 4,
-            fontWeight: 500,
-            opacity: 0.9,
-            lineHeight: 1.4,
-          }}
-        >
-          Enjoy booking tables at your favorite local restaurants with ease. Use
-          our specialized filters to refine your search and plan your dining
-          experience.
-        </Typography>
-      </Box>
       <Container maxWidth="lg">
         <Box
           pt={{ xs: 3, md: 4 }}

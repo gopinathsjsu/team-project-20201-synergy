@@ -50,11 +50,8 @@ const Booking = () => {
 
   useEffect(() => {
     if (date && time && typeof date === "string" && typeof time === "string") {
-      // Parse the date which is in YYYY-DD-MM format
-      const [year, day, month] = date.split("-");
-      // Reformat to YYYY-MM-DD for dayjs
-      const formattedDate = `${year}-${month}-${day}`;
-      const dateTimeString = `${formattedDate}T${time}`;
+      // Date is already in YYYY-MM-DD format, so we can directly use it
+      const dateTimeString = `${date}T${time}`;
       const bookingDateTime = dayjs(dateTimeString);
 
       if (bookingDateTime.isValid()) {
@@ -102,14 +99,11 @@ const Booking = () => {
     setError("");
     setIsLoading(true);
 
-    // Format the date correctly before sending to API
-    const [year, day, month] = date.split("-");
-    const formattedDate = `${year}-${month}-${day}`;
-
+    // Date is already in YYYY-MM-DD format from query
     const bookingPayload = {
       restaurantId,
       restaurantName,
-      bookingDate: formattedDate, // Use the correctly formatted date
+      bookingDate: date, // Use the date directly from query
       bookingTime: time,
       partySize,
       email: email,
