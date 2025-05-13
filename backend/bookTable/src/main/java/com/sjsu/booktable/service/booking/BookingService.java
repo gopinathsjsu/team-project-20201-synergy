@@ -1,5 +1,6 @@
 package com.sjsu.booktable.service.booking;
 
+import com.sjsu.booktable.model.dto.booking.BookingConflictResponseDto;
 import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.dto.booking.BookingResponseDTO;
 
@@ -14,4 +15,5 @@ public interface BookingService {
     BookingResponseDTO createBooking(BookingRequestDTO bookingRequestDTO);
     BookingResponseDTO cancelBooking(int bookingId);
     List<BookingResponseDTO> getBookingsByCustomerId(String customerId);
+    BookingConflictResponseDto checkConflictingBooking(String customerId, LocalDate bookingDate, LocalTime bookingTime);
 }

@@ -5,7 +5,7 @@ import ReservationForm from "./components/reservationForm/ReservationForm";
 import SearchResult from "./components/searchResult/SearchResult";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNearbySuggestions } from "@/hooks/useNearbySuggestions";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -15,6 +15,9 @@ const DISPLAY_MODE = {
   SUGGESTIONS: "suggestions",
   RESULTS: "results",
 };
+
+// Common placeholder image key used throughout the app
+const PLACEHOLDER_KEY = "restaurants/main/restaurant-main.jpeg";
 
 function Home(props) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE.SUGGESTIONS);
@@ -28,6 +31,7 @@ function Home(props) {
   });
   const [presignedUrls, setPresignedUrls] = useState({});
   const [isLoadingUrls, setIsLoadingUrls] = useState(false);
+  const processedImageKeys = useRef(new Set());
 
   const {
     suggestions,
@@ -44,36 +48,36 @@ function Home(props) {
       try {
         setIsLoadingUrls(true);
 
-        // Extract all image keys
+        // Extract all image keys and filter out already processed ones and null/undefined values
         const imageKeys = restaurantList
           .map((restaurant) => restaurant.mainPhotoUrl)
-          .filter(Boolean);
+          .filter(key => key && !processedImageKeys.current.has(key));
 
+        // Skip if we have no new keys to process 
         if (imageKeys.length === 0) {
           setIsLoadingUrls(false);
           return;
         }
 
+        // Mark these keys as processed before making the API call
+        // to ensure we don't ask for them again if there's a race condition
+        imageKeys.forEach(key => processedImageKeys.current.add(key));
+
         console.log(
           "Home - Fetching presigned URLs for restaurant images:",
           imageKeys.length
         );
+        
         const urls = await getPresignedUrls(imageKeys);
         console.log(
           "Home - Received presigned URLs:",
           Object.keys(urls).length
         );
 
-        setPresignedUrls((prevUrls) => {
-          // Only add new URLs, don't replace existing ones
-          const updatedUrls = { ...prevUrls };
-          Object.entries(urls).forEach(([key, url]) => {
-            if (url && !updatedUrls[key]) {
-              updatedUrls[key] = url;
-            }
-          });
-          return updatedUrls;
-        });
+        setPresignedUrls((prevUrls) => ({
+          ...prevUrls,
+          ...urls
+        }));
       } catch (error) {
         console.error("Error batch fetching presigned URLs:", error);
       } finally {
