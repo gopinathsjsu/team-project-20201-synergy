@@ -32,6 +32,7 @@ public class RestaurantDetailsResponse {
     // Specific time slots as defined by TimeSlotDTO for each day
     private List<TimeSlotDto> timeSlots;
     private boolean approved;
+    private Integer bookingCount; // Number of bookings for this restaurant on the current date
 
     private List<ReviewDto> reviews;
 

@@ -19,6 +19,8 @@ import styles from "./reservationForm.module.scss";
 import TimeSelect from "@/components/timePicker/TimePicker";
 
 const MAX_PERSONS = 20;
+const LOCATION_CACHE_KEY = "userGeolocation";
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
 function ReservationForm({ onSearchSubmit, onSearchChange }) {
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -62,9 +64,47 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
           lng: () => longitude,
         },
       },
-      formatted_address: "Current Location",
-      name: "Current Location",
     };
+  };
+
+  // Get location from localStorage
+  const getLocationFromStorage = () => {
+    try {
+      const cachedItem = localStorage.getItem(LOCATION_CACHE_KEY);
+      if (cachedItem) {
+        const { data: cachedLocation, timestamp } = JSON.parse(cachedItem);
+
+        // Check if cache is still valid (not expired)
+        if (Date.now() - timestamp < CACHE_MAX_AGE_MS) {
+          console.log(
+            "Using cached location from localStorage:",
+            cachedLocation
+          );
+          return cachedLocation;
+        } else {
+          console.log("Cached location expired, requesting fresh location");
+        }
+      }
+    } catch (error) {
+      console.error("Error reading location from localStorage:", error);
+    }
+    return null;
+  };
+
+  // Save location to localStorage
+  const saveLocationToStorage = (location) => {
+    try {
+      localStorage.setItem(
+        LOCATION_CACHE_KEY,
+        JSON.stringify({
+          data: location,
+          timestamp: Date.now(),
+        })
+      );
+      console.log("Location saved to localStorage successfully");
+    } catch (error) {
+      console.error("Error saving location to localStorage:", error);
+    }
   };
 
   // Get user's current location
@@ -72,6 +112,19 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
     setIsLocating(true);
     setLocationError("");
 
+    // First try to get location from localStorage
+    const cachedLocation = getLocationFromStorage();
+
+    if (cachedLocation) {
+      // Use cached location
+      const { latitude, longitude } = cachedLocation;
+      const locationObj = createLocationFromCoords(latitude, longitude);
+      setSelectedLocation(locationObj);
+      setIsLocating(false);
+      return;
+    }
+
+    // If no cached location, use geolocation API
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -82,8 +135,13 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
           const locationObj = createLocationFromCoords(latitude, longitude);
           setSelectedLocation(locationObj);
 
-          // Set the search text to "Current Location"
-          setSearchText("Current Location");
+          // Save location to localStorage
+          saveLocationToStorage({
+            latitude,
+            longitude,
+            accuracy: position.coords.accuracy,
+            timestamp: position.timestamp,
+          });
 
           setIsLocating(false);
         },
@@ -105,8 +163,6 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
   };
 
   useEffect(() => {
-    setSearchText("");
-
     // Try to get the current location when component mounts
     getCurrentLocation();
   }, []);

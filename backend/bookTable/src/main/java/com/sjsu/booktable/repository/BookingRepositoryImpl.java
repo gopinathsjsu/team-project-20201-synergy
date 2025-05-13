@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,4 +133,45 @@ public class BookingRepositoryImpl implements BookingRepository {
         }
     }
 
+    
+    @Override
+    public Map<Integer, Integer> getBookingCountsByRestaurantIds(List<Integer> restaurantIds, LocalDate date) {
+        if (restaurantIds == null || restaurantIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        
+        // Create the SQL query to count bookings grouped by restaurant
+        String sql = "SELECT restaurant_id, COUNT(*) as booking_count " +
+                     "FROM bookings " +
+                     "WHERE restaurant_id IN (" + buildPlaceholders(restaurantIds) + ") " +
+                     "AND booking_date = ? " +
+                     "AND status = 'confirmed' " + 
+                     "GROUP BY restaurant_id";
+        
+        // Build the parameters array (restaurant IDs followed by the date)
+        Object[] params = new Object[restaurantIds.size() + 1];
+        for (int i = 0; i < restaurantIds.size(); i++) {
+            params[i] = restaurantIds.get(i);
+        }
+        params[restaurantIds.size()] = date;
+        
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+        
+        // Build the result map
+        Map<Integer, Integer> bookingCounts = new HashMap<>();
+        
+        // Initialize all IDs with 0 bookings
+        for (Integer restaurantId : restaurantIds) {
+            bookingCounts.put(restaurantId, 0);
+        }
+        
+        // Update counts from database results
+        for (Map<String, Object> row : rows) {
+            Integer restaurantId = (Integer) row.get("restaurant_id");
+            Integer count = ((Number) row.get("booking_count")).intValue();
+            bookingCounts.put(restaurantId, count);
+        }
+        
+        return bookingCounts;
+    }
 }

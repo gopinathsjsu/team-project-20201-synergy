@@ -24,6 +24,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import TimeSelect from "@/components/timePicker/TimePicker";
 import Image from "next/image";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import axios from "axios";
 import { AuthContext } from "@/AuthContext/AuthContext";
 import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
@@ -248,6 +249,35 @@ export default function RestaurantPage(props) {
     );
   };
 
+  // Add the BookingCount component at the top of your render method
+  const renderBookingCount = () => {
+    if (!restaurant || !restaurant.bookingCount) return null;
+
+    return (
+      <Box display="flex" justifyContent="flex-start" mb={3}>
+        <Chip
+          icon={<PeopleAltIcon />}
+          label={`${restaurant.bookingCount} ${
+            restaurant.bookingCount === 1 ? "booking" : "bookings"
+          } today`}
+          color="secondary"
+          size="medium"
+          sx={{
+            fontWeight: "bold",
+            boxShadow: 2,
+            fontSize: "1rem",
+            py: 1,
+            px: 2,
+            "& .MuiChip-icon": {
+              fontSize: "1.2rem",
+              color: "inherit",
+            },
+          }}
+        />
+      </Box>
+    );
+  };
+
   if (isLoading)
     return (
       <Box sx={{ display: "flex", justifyContent: "center", margin: 20 }}>
@@ -453,6 +483,7 @@ export default function RestaurantPage(props) {
               size="small"
             />
           </Stack>
+          {renderBookingCount()}
 
           <Typography variant="body1" color="text.secondary" mb={2}>
             {description}
