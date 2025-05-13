@@ -60,7 +60,7 @@ export default function RestaurantPage(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs(bookingDate));
   const [selectedTime, setSelectedTime] = useState("");
-  const [totalPerson, setTotalPerson] = useState("");
+  const [totalPerson, setTotalPerson] = useState(2);
 
   const fetchRestaurantDetails = async () => {
     setIsLoading(true);
@@ -240,7 +240,7 @@ export default function RestaurantPage(props) {
           restaurantName: restaurant?.name,
           date: formattedDate,
           time: selectedTime,
-          partySize,
+          partySize: totalPerson,
         },
       },
       undefined,
@@ -378,6 +378,13 @@ export default function RestaurantPage(props) {
                 label="Booking Time"
                 value={selectedTime}
                 onChange={(e) => handleTimeChange(e.target.value)}
+                daySlots={
+                  selectedDate && timeSlots
+                    ? timeSlots.find(
+                        (slot) => slot.dayOfWeek === selectedDate.day()
+                      )?.times || []
+                    : []
+                }
               />
 
               <TextField

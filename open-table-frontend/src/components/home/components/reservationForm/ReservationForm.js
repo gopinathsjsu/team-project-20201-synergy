@@ -25,7 +25,7 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
   const [selectedTime, setSelectedTime] = useState("20:00");
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [personCount, setPersonCount] = useState(2);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState(null);
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -46,12 +46,12 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
   };
 
   const handleLocationChange = (place) => {
-    setSearchText("");
+    setSearchText(null);
     setSelectedLocation(place);
   };
 
   useEffect(() => {
-    setSearchText("");
+    setSearchText(null);
   }, []);
 
   const disablePastDates = (date) => {
@@ -100,7 +100,7 @@ function ReservationForm({ onSearchSubmit, onSearchChange }) {
         justifyContent: "center",
         py: { xs: 4, md: 6 },
         px: { xs: 2, md: 8 },
-        bgcolor: "beige", // soft branded background
+        bgcolor: "white", // soft branded background
       }}
     >
       <LocalizationProvider dateAdapter={AdapterDayjs}>
