@@ -398,7 +398,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         // Retrieve operating hours (HoursDto) for the given day
         HoursDto hours = restaurantHoursService.getHoursForRestaurantAndDay(restaurantId, dayOfWeek);
 
-        if (hours == null) {
+        if (hours == null || hours.getOpenTime() == null || hours.getCloseTime() == null) {
             return false;
         }
 

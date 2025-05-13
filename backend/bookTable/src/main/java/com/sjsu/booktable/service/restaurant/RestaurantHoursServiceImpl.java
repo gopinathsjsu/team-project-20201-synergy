@@ -38,8 +38,8 @@ public class RestaurantHoursServiceImpl implements RestaurantHoursService {
         }
         HoursDto hoursDto = new HoursDto();
         hoursDto.setDayOfWeek(hours.getDayOfWeek());
-        hoursDto.setOpenTime(hours.getOpenTime().toLocalTime());
-        hoursDto.setCloseTime(hours.getCloseTime().toLocalTime());
+        hoursDto.setOpenTime(hours.getOpenTime() == null ? null : hours.getOpenTime().toLocalTime());
+        hoursDto.setCloseTime(hours.getCloseTime() == null ? null : hours.getCloseTime().toLocalTime());
         return hoursDto;
     }
 
@@ -49,8 +49,8 @@ public class RestaurantHoursServiceImpl implements RestaurantHoursService {
         return hoursList.stream().map(hours -> {
             HoursDto hoursDto = new HoursDto();
             hoursDto.setDayOfWeek(hours.getDayOfWeek());
-            hoursDto.setOpenTime(hours.getOpenTime().toLocalTime());
-            hoursDto.setCloseTime(hours.getCloseTime().toLocalTime());
+            hoursDto.setOpenTime(hours.getOpenTime() == null ? null : hours.getOpenTime().toLocalTime());
+            hoursDto.setCloseTime(hours.getCloseTime() == null ? null : hours.getCloseTime().toLocalTime());
             return hoursDto;
         }).toList();
     }
