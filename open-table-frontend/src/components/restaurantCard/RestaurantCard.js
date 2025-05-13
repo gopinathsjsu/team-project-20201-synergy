@@ -8,8 +8,10 @@ import {
   Chip,
   Button,
   Stack,
+  Badge,
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import dayjs from "dayjs";
 import { useRouter } from "next/router";
 import { useContext, useState, useEffect } from "react";
@@ -17,7 +19,7 @@ import { AuthContext } from "@/AuthContext/AuthContext";
 import { getPresignedUrls } from "@/utils/imageUtils";
 
 // Fallback image to use only when the actual image fails to load
-const PLACEHOLDER_IMAGE = "/restaurant-image.svg"; 
+const PLACEHOLDER_IMAGE = "/restaurant-image.svg";
 
 export default function RestaurantCard({
   restaurant,
@@ -33,6 +35,7 @@ export default function RestaurantCard({
     availableTimeSlots,
     mainPhotoUrl,
     id,
+    bookingCount,
   } = restaurant;
 
   // Initialize with placeholder but try to load the actual image
@@ -124,26 +127,42 @@ export default function RestaurantCard({
         overflow: "hidden",
       }}
     >
-      <CardMedia
-        component="img"
-        height="180"
-        image={imageUrl}
-        alt={name}
-        sx={{ objectFit: "cover" }}
-        onError={(e) => {
-          if (!imageError) {
-            console.warn(
-              `RestaurantCard (${name}) - Failed to load image, using fallback for:`,
-              mainPhotoUrl
-            );
-            setImageUrl(PLACEHOLDER_IMAGE);
-            setImageError(true);
-            
-            // Prevent infinite error loops if even the placeholder fails
-            e.target.onerror = null;
-          }
-        }}
-      />
+      <Box position="relative">
+        <CardMedia
+          component="img"
+          height="180"
+          image={imageUrl}
+          alt={name}
+          sx={{ objectFit: "cover" }}
+          onError={(e) => {
+            if (!imageError) {
+              console.error(
+                `RestaurantCard (${name}) - Failed to load image from URL:`,
+                imageUrl
+              );
+              setImageUrl("/images/placeholder.png");
+              setImageError(true);
+            }
+          }}
+        />
+        {bookingCount > 0 && (
+          <Chip
+            icon={<PeopleAltIcon fontSize="small" />}
+            label={`${bookingCount} ${
+              bookingCount === 1 ? "booking" : "bookings"
+            } today`}
+            size="small"
+            color="secondary"
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              fontWeight: "bold",
+              boxShadow: 2,
+            }}
+          />
+        )}
+      </Box>
 
       <CardContent sx={{ px: 2.5, py: 2 }}>
         {/* Name */}

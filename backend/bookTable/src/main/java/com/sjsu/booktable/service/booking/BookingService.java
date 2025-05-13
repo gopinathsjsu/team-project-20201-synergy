@@ -16,4 +16,5 @@ public interface BookingService {
     BookingResponseDTO cancelBooking(int bookingId);
     List<BookingResponseDTO> getBookingsByCustomerId(String customerId);
     BookingConflictResponseDto checkConflictingBooking(String customerId, LocalDate bookingDate, LocalTime bookingTime);
+    Map<Integer, Integer> getBookingCountsByRestaurantIds(List<Integer> restaurantIds, LocalDate date);
 }

@@ -135,4 +135,19 @@ public class BookingServiceImpl implements BookingService {
         conflictResponse.setConflictingBooking(conflictingBooking);
         return conflictResponse;
     }
+
+    public Map<Integer, Integer> getBookingCountsByRestaurantIds(List<Integer> restaurantIds, LocalDate date) {
+        if (CollectionUtils.isEmpty(restaurantIds)) {
+            return new HashMap<>();
+        }
+        
+        try {
+            return bookingRepository.getBookingCountsByRestaurantIds(restaurantIds, date);
+        } catch (Exception e) {
+            log.error("Error fetching booking counts for restaurants on date {}: {}", date, e.getMessage());
+            // Return empty map on error
+            return restaurantIds.stream()
+                .collect(Collectors.toMap(id -> id, id -> 0));
+        }
+    }
 }

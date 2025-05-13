@@ -22,4 +22,6 @@ public interface BookingRepository {
     List<Booking> findBookingsByCustomerId(String customerId);
 
     Booking findBookingWithConflict(String customerId, LocalDate reservationDate, LocalTime fromTime, LocalTime toTime);
+    
+    Map<Integer, Integer> getBookingCountsByRestaurantIds(List<Integer> restaurantIds, LocalDate date);
 }

@@ -123,8 +123,14 @@ public class RestaurantServiceImpl implements RestaurantService {
             LocalTime resTime = searchRequest.getTime();
             int partySize = searchRequest.getPartySize();
 
+            // Extract restaurant IDs for batch booking count query
+            List<Integer> restaurantIds = new ArrayList<>();
+            Map<Integer, RestaurantSearchDetails> restaurantMap = new HashMap<>();
+
             for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
                 int restaurantId = nearbyRestaurant.getId();
+                restaurantIds.add(restaurantId);
+                restaurantMap.put(restaurantId, nearbyRestaurant);
 
                 boolean withinHours = isWithinOperatingHours(restaurantId, resTime, dayOfWeek);
                 if (!withinHours) {
@@ -152,6 +158,22 @@ public class RestaurantServiceImpl implements RestaurantService {
                 availableRestaurants.add(nearbyRestaurant);
             }
 
+            // Get booking counts for all restaurants for the specified date
+            if (!restaurantIds.isEmpty()) {
+                Map<Integer, Integer> bookingCounts = bookingService.getBookingCountsByRestaurantIds(restaurantIds, resDate);
+                
+                // Set booking counts for all restaurants
+                for (Map.Entry<Integer, Integer> entry : bookingCounts.entrySet()) {
+                    Integer restaurantId = entry.getKey();
+                    Integer count = entry.getValue();
+                    
+                    RestaurantSearchDetails restaurant = restaurantMap.get(restaurantId);
+                    if (restaurant != null) {
+                        restaurant.setBookingCount(count);
+                    }
+                }
+            }
+
             return RestaurantSearchResponse.builder()
                     .count(availableRestaurants.size())
                     .restaurantSearchDetails(availableRestaurants)
@@ -174,8 +196,14 @@ public class RestaurantServiceImpl implements RestaurantService {
             int dayOfWeek = currentDate.getDayOfWeek().getValue() % 7;
             LocalTime currentTime = LocalTime.now(ZoneId.of("America/Los_Angeles")).plusMinutes(30);
 
+            // Extract restaurant IDs for batch booking count query
+            List<Integer> restaurantIds = new ArrayList<>();
+            Map<Integer, RestaurantSearchDetails> restaurantMap = new HashMap<>();
+
             for (RestaurantSearchDetails nearbyRestaurant : ListUtils.nullSafeList(nearbyRestaurants)) {
                 int restaurantId = nearbyRestaurant.getId();
+                restaurantIds.add(restaurantId);
+                restaurantMap.put(restaurantId, nearbyRestaurant);
 
                 boolean withinHours = isWithinOperatingHours(restaurantId, currentTime, dayOfWeek);
                 if (!withinHours) {
@@ -200,6 +228,22 @@ public class RestaurantServiceImpl implements RestaurantService {
                 double avgRating = reviewService.getAverageRatingByRestaurant(restaurantId);
                 nearbyRestaurant.setAvgRating(avgRating);
                 availableRestaurants.add(nearbyRestaurant);
+            }
+
+            // Get booking counts for all restaurants for the current date
+            if (!restaurantIds.isEmpty()) {
+                Map<Integer, Integer> bookingCounts = bookingService.getBookingCountsByRestaurantIds(restaurantIds, currentDate);
+                
+                // Set booking counts for all restaurants
+                for (Map.Entry<Integer, Integer> entry : bookingCounts.entrySet()) {
+                    Integer restaurantId = entry.getKey();
+                    Integer count = entry.getValue();
+                    
+                    RestaurantSearchDetails restaurant = restaurantMap.get(restaurantId);
+                    if (restaurant != null) {
+                        restaurant.setBookingCount(count);
+                    }
+                }
             }
 
             return RestaurantSearchResponse.builder()
@@ -246,6 +290,11 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         //  Fetch reviews using ReviewService
         List<ReviewDto> reviews = reviewService.getReviewsByRestaurantId(restaurantId);
+        // Get booking count for today
+        LocalDate today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
+        Map<Integer, Integer> bookingCounts = bookingService.getBookingCountsByRestaurantIds(
+                Collections.singletonList(restaurantId), today);
+        Integer bookingCount = bookingCounts.getOrDefault(restaurantId, 0);
 
         // Extract coordinates safely handling null locations
         Double longitude = null;
@@ -276,6 +325,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .timeSlots(timeSlots)
                 .approved(restaurant.isApproved())
                 .reviews(reviews)
+                .bookingCount(bookingCount)
                 .build();
     }
 
