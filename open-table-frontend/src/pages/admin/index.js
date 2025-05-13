@@ -87,8 +87,8 @@ function AdminDashboard() {
         Admin Dashboard
       </Typography>
        <Typography variant="caption" display="block" gutterBottom>
-        {/* This date range is determined by the backend, currently for the last month */}
-        (Data from {new Date(analyticsData.startDate).toLocaleDateString()} to {new Date(analyticsData.endDate).toLocaleDateString()})
+        {/* This date range is determined by the backend, currently for the this month */}
+        (Booking Reservations from {new Date(analyticsData.startDate).toLocaleDateString()} to {new Date(analyticsData.endDate).toLocaleDateString()})
       </Typography>
 
       <Grid container spacing={3} sx={{ marginTop: 2 }}>
@@ -103,7 +103,7 @@ function AdminDashboard() {
               {/* Displays the number of total reservations */}
               <Typography variant="h4">{analyticsData.totalReservations ?? 'N/A'}</Typography>
               {/* Indicates the time period for the data */}
-              <Typography variant="body2">(Last Month)</Typography>
+              <Typography variant="body2">(Current Month)</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -118,7 +118,7 @@ function AdminDashboard() {
                  {analyticsData.averageReservationsPerDay?.toFixed(2) ?? 'N/A'}
               </Typography>
                {/* Indicates the time period for the data */}
-               <Typography variant="body2">(Last Month)</Typography>
+               <Typography variant="body2">(Current Month)</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -128,7 +128,7 @@ function AdminDashboard() {
            <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Most Popular Restaurants (Last Month)
+                Most Popular Restaurants (Current Month)
               </Typography>
               {/* Checks if there are popular restaurants to display */}
               {analyticsData.mostPopularRestaurants && analyticsData.mostPopularRestaurants.length > 0 ? (
