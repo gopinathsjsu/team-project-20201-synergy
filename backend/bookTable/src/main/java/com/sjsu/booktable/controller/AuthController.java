@@ -43,6 +43,7 @@ public class AuthController {
             tokenCookie.setHttpOnly(true);
             tokenCookie.setPath("/"); // Cookie available for all routes
             tokenCookie.setMaxAge(10800); // Match token expiry, e.g., 3 hour
+            tokenCookie.setSecure(true);
             response.addCookie(tokenCookie);
         }
 
@@ -63,6 +64,7 @@ public class AuthController {
         clearCookie.setHttpOnly(true);
         clearCookie.setPath("/");
         clearCookie.setMaxAge(0); // Delete cookie
+        clearCookie.setSecure(true);
         response.addCookie(clearCookie);
 
         return ResponseEntity.ok(BTResponse.success("Logged out successfully"));
