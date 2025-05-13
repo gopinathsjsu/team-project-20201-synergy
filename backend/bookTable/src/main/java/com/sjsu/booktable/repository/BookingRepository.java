@@ -20,4 +20,6 @@ public interface BookingRepository {
     Booking findBookingById(int bookingId);
     
     List<Booking> findBookingsByCustomerId(String customerId);
+
+    Booking findBookingWithConflict(String customerId, LocalDate reservationDate, LocalTime fromTime, LocalTime toTime);
 }

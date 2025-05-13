@@ -1,6 +1,7 @@
 package com.sjsu.booktable.controller;
 
 import com.sjsu.booktable.model.dto.BTResponse;
+import com.sjsu.booktable.model.dto.booking.BookingConflictResponseDto;
 import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.dto.booking.BookingResponseDTO;
 import com.sjsu.booktable.model.entity.Booking;
@@ -13,7 +14,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -48,5 +53,17 @@ public class BookingController {
             .map(BookingResponseDTO::getBooking)
             .collect(Collectors.toList());
         return ResponseEntity.ok(BTResponse.success(bookings));
+    }
+    
+    @GetMapping("/check-conflicts")
+    @PreAuthorize("hasAuthority('Customer')")
+    public ResponseEntity checkConflictingBookings(
+            @RequestParam("bookingDate") LocalDate bookingDate,
+            @RequestParam("bookingTime") LocalTime bookingTime,
+            @AuthenticationPrincipal Jwt jwt) {
+        
+        String customerId = jwt.getSubject();
+        BookingConflictResponseDto conflictingBooking = bookingService.checkConflictingBooking(customerId, bookingDate, bookingTime);
+        return ResponseEntity.ok(BTResponse.success(conflictingBooking));
     }
 }

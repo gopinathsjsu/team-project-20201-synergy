@@ -22,7 +22,7 @@ public class S3Controller {
 
     @PostMapping("/presigned-url/batch")
     public ResponseEntity getBatchPresignedUrls(@RequestBody List<String> keys,
-                                                @RequestParam(required = false, defaultValue = "10") int expiration) {
+                                                @RequestParam(required = false, defaultValue = "60") int expiration) {
         try {
             List<String> uniqueKeys = keys.stream().distinct().toList();
             Map<String, URL> urls = uniqueKeys.stream()
