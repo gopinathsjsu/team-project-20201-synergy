@@ -29,8 +29,10 @@ public class RestaurantHoursRepositoryImpl implements RestaurantHoursRepository 
                 HoursDto hd = hoursList.get(i);
                 ps.setInt(1, restaurantId);
                 ps.setInt(2, hd.getDayOfWeek());
-                ps.setTime(3, Time.valueOf(hd.getOpenTime()));
-                ps.setTime(4, Time.valueOf(hd.getCloseTime()));
+                Time openTime = (hd.getOpenTime() == null) ? null : Time.valueOf(hd.getOpenTime());
+                ps.setTime(3, openTime);
+                Time closeTime = (hd.getCloseTime() == null) ? null : Time.valueOf(hd.getCloseTime());
+                ps.setTime(4, closeTime);
             }
             @Override
             public int getBatchSize() {
