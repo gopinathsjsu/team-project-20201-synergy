@@ -12,11 +12,11 @@ public class ReviewRowMapper implements RowMapper<Review> {
     public Review mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Review.builder()
                 .id(rs.getInt("id"))
-                .restaurantId(rs.getInt("restaurant_id"))
+                .restaurantId(rs.getInt("restaurantId"))
                 .rating(rs.getInt("rating"))
-                .reviewText(rs.getString("review_text"))
-                .createdAt(rs.getTimestamp("created_at"))
-                .userName(rs.getString("user_name"))
+                .reviewText(rs.getString("reviewText"))
+                .createdAt(rs.getTimestamp("createdAt"))
+                .userName(rs.getString("userName"))
                 .build();
     }
 }

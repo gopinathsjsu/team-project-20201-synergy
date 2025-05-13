@@ -18,13 +18,13 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public List<Review> findByRestaurantId(int restaurantId) {
-        String sql = "SELECT * FROM reviews WHERE restaurant_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM reviews WHERE restaurantId = ? ORDER BY createdAt DESC";
         return jdbcTemplate.query(sql, new ReviewRowMapper(), restaurantId);
     }
 
     @Override
     public double getAverageRatingByRestaurant(int restaurantId) {
-        String sql = "SELECT COALESCE(AVG(rating), 0.0) FROM reviews WHERE restaurant_id = ?";
+        String sql = "SELECT COALESCE(AVG(rating), 0.0) FROM reviews WHERE restaurantId = ?";
         try {
             Double average = jdbcTemplate.queryForObject(sql, Double.class, restaurantId);
             return average != null ? average : 0.0;
