@@ -161,12 +161,12 @@ public class RestaurantServiceImpl implements RestaurantService {
             // Get booking counts for all restaurants for the specified date
             if (!restaurantIds.isEmpty()) {
                 Map<Integer, Integer> bookingCounts = bookingService.getBookingCountsByRestaurantIds(restaurantIds, resDate);
-                
+
                 // Set booking counts for all restaurants
                 for (Map.Entry<Integer, Integer> entry : bookingCounts.entrySet()) {
                     Integer restaurantId = entry.getKey();
                     Integer count = entry.getValue();
-                    
+
                     RestaurantSearchDetails restaurant = restaurantMap.get(restaurantId);
                     if (restaurant != null) {
                         restaurant.setBookingCount(count);
@@ -233,12 +233,12 @@ public class RestaurantServiceImpl implements RestaurantService {
             // Get booking counts for all restaurants for the current date
             if (!restaurantIds.isEmpty()) {
                 Map<Integer, Integer> bookingCounts = bookingService.getBookingCountsByRestaurantIds(restaurantIds, currentDate);
-                
+
                 // Set booking counts for all restaurants
                 for (Map.Entry<Integer, Integer> entry : bookingCounts.entrySet()) {
                     Integer restaurantId = entry.getKey();
                     Integer count = entry.getValue();
-                    
+
                     RestaurantSearchDetails restaurant = restaurantMap.get(restaurantId);
                     if (restaurant != null) {
                         restaurant.setBookingCount(count);
@@ -288,8 +288,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<HoursDto> hours = restaurantHoursService.getHoursForRestaurant(restaurantId);
         List<TimeSlotDto> timeSlots = timeSlotService.getTimeSlotsForRestaurant(restaurantId);
 
-        //  Fetch reviews using ReviewService
+        //restaurant reviews
         List<ReviewDto> reviews = reviewService.getReviewsByRestaurantId(restaurantId);
+        double overallAverageRating = reviewService.getAverageRatingByRestaurant(restaurantId);
+        int totalReviewCount = reviews != null ? reviews.size() : 0;
+
         // Get booking count for today
         LocalDate today = LocalDate.now(ZoneId.of("America/Los_Angeles"));
         Map<Integer, Integer> bookingCounts = bookingService.getBookingCountsByRestaurantIds(
@@ -325,6 +328,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .timeSlots(timeSlots)
                 .approved(restaurant.isApproved())
                 .reviews(reviews)
+                .averageRating(overallAverageRating)
+                .reviewCount(totalReviewCount)
                 .bookingCount(bookingCount)
                 .build();
     }
