@@ -105,7 +105,7 @@ public class BookingRepositoryImpl implements BookingRepository {
         // Process the query results and update the map.
         for (Map<String, Object> row : rows) {
             Time bookingTime = (Time) row.get("booking_time");
-            int total = (Integer) row.get("total");
+            int total = ((Number) row.get("total")).intValue();
             timeSlotBookedCount.put(bookingTime.toLocalTime(), total);
         }
         return timeSlotBookedCount;
