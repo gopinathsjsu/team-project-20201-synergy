@@ -19,5 +19,6 @@ public class Review {
     private int restaurantId;
     private int rating;
     private String reviewText;
+    private String userName;
     private Timestamp createdAt;
 }

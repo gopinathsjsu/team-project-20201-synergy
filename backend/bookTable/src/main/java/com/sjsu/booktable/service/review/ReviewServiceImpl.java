@@ -1,9 +1,9 @@
 package com.sjsu.booktable.service.review;
 
-import com.sjsu.booktable.model.dto.review.ReviewDto; // Or use Review entity
+import com.sjsu.booktable.model.dto.review.ReviewDto;
 import com.sjsu.booktable.model.entity.Review;
 import com.sjsu.booktable.repository.ReviewRepository;
-import com.sjsu.booktable.utils.ListUtils; // Assuming you have this utility
+import com.sjsu.booktable.utils.ListUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +24,11 @@ public class ReviewServiceImpl implements ReviewService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public double getAverageRatingByRestaurant(int restaurantId) {
+        return reviewRepository.getAverageRatingByRestaurant(restaurantId);
+    }
+
     private ReviewDto convertToDto(Review review) {
         return ReviewDto.builder()
                 .id(review.getId())
@@ -31,7 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .rating(review.getRating())
                 .reviewText(review.getReviewText())
                 .createdAt(review.getCreatedAt())
-                // .userName(fetchUserName(review.getUserId())) // If you add userId
+                .userName(review.getUserName())
                 .build();
     }
 

@@ -16,6 +16,7 @@ public class ReviewRowMapper implements RowMapper<Review> {
                 .rating(rs.getInt("rating"))
                 .reviewText(rs.getString("review_text"))
                 .createdAt(rs.getTimestamp("created_at"))
+                .userName(rs.getString("user_name"))
                 .build();
     }
 }

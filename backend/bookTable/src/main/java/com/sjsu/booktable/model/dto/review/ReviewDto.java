@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 public class ReviewDto {
     private int id;
     private int restaurantId;
-    // private String userName; // Or user details if you add userId to Review entity
+    private String userName;
     private int rating;
     private String reviewText;
     private Timestamp createdAt;

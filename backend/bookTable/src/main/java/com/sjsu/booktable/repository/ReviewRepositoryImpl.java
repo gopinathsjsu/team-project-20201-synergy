@@ -2,14 +2,15 @@ package com.sjsu.booktable.repository;
 
 import com.sjsu.booktable.mappers.ReviewRowMapper;
 import com.sjsu.booktable.model.entity.Review;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException; // Import this
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@Slf4j
 public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Autowired
@@ -17,12 +18,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
 
     @Override
     public List<Review> findByRestaurantId(int restaurantId) {
-        String sql = "SELECT id, restaurant_id, rating, review_text, created_at FROM reviews WHERE restaurant_id = ? ORDER BY created_at DESC";
-        try {
-            return jdbcTemplate.query(sql, new ReviewRowMapper(), restaurantId);
-        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
-            return List.of();
-        }
+        String sql = "SELECT * FROM reviews WHERE restaurant_id = ? ORDER BY created_at DESC";
+        return jdbcTemplate.query(sql, new ReviewRowMapper(), restaurantId);
     }
 
     @Override
@@ -31,11 +28,8 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         try {
             Double average = jdbcTemplate.queryForObject(sql, Double.class, restaurantId);
             return average != null ? average : 0.0;
-        } catch (EmptyResultDataAccessException e) {
-            // This can happen if a restaurant has no reviews yet.
-            return 0.0;
         } catch (Exception e) {
-            System.err.println("Error fetching average rating for restaurant " + restaurantId + ": " + e.getMessage());
+            log.error("Error fetching average rating for restaurant {}: {}", restaurantId, e.getMessage(), e);
             return 0.0;
         }
     }

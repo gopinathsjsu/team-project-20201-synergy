@@ -11,7 +11,6 @@ import com.sjsu.booktable.model.dto.review.ReviewDto;
 import com.sjsu.booktable.model.entity.Photo;
 import com.sjsu.booktable.model.entity.Restaurant;
 import com.sjsu.booktable.repository.RestaurantRepository;
-import com.sjsu.booktable.repository.ReviewRepository;
 import com.sjsu.booktable.service.booking.BookingService;
 import com.sjsu.booktable.service.review.ReviewService;
 import com.sjsu.booktable.service.s3.S3Service;
@@ -45,7 +44,6 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final GoogleMapsService googleMapsService;
     private final BookingService bookingService;
     private final RestaurantValidator validator;
-    private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
 
     private static final int SLOT_TOLERANCE_MINUTES = 30;
@@ -148,9 +146,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 nearbyRestaurant.setAvailableTimeSlots(availableTimeSlots);
 
                 // fetch ratings
-                double avgRating = reviewRepository.getAverageRatingByRestaurant(restaurantId);
+                double avgRating = reviewService.getAverageRatingByRestaurant(restaurantId);
                 nearbyRestaurant.setAvgRating(avgRating);
-
 
                 availableRestaurants.add(nearbyRestaurant);
             }
@@ -200,7 +197,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 nearbyRestaurant.setAvailableTimeSlots(availableTimeSlots);
 
                 // fetch ratings
-                double avgRating = reviewRepository.getAverageRatingByRestaurant(restaurantId);
+                double avgRating = reviewService.getAverageRatingByRestaurant(restaurantId);
                 nearbyRestaurant.setAvgRating(avgRating);
                 availableRestaurants.add(nearbyRestaurant);
             }
