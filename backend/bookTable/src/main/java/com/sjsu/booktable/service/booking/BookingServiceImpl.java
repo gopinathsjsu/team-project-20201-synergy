@@ -1,12 +1,14 @@
 package com.sjsu.booktable.service.booking;
 
 import com.sjsu.booktable.exception.booking.BookingNotFoundException;
+import com.sjsu.booktable.model.dto.booking.BookingConflictResponseDto;
 import com.sjsu.booktable.model.dto.booking.BookingRequestDTO;
 import com.sjsu.booktable.model.dto.booking.BookingResponseDTO;
 import com.sjsu.booktable.model.entity.Booking;
 import com.sjsu.booktable.model.enums.BookingStatus;
 import com.sjsu.booktable.repository.BookingRepository;
 import com.sjsu.booktable.service.email.EmailService;
+import com.sjsu.booktable.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -110,5 +112,27 @@ public class BookingServiceImpl implements BookingService {
             })
             .collect(Collectors.toList());
     }
+    
+    @Override
+    public BookingConflictResponseDto checkConflictingBooking(String customerId, LocalDate bookingDate, LocalTime bookingTime) {
+        if (StringUtils.isBlank(customerId) || bookingDate == null || bookingTime == null) {
+            return null;
+        }
+        
+        // Get all bookings for this customer on the requested date
+        // Check if any booking time is within +/- 1 hour of the requested time
+        LocalTime oneHourBefore = bookingTime.minusHours(1);
+        LocalTime oneHourAfter = bookingTime.plusHours(1);
+        Booking conflictBooking = bookingRepository.findBookingWithConflict(customerId, bookingDate, oneHourBefore, oneHourAfter);
 
+        BookingConflictResponseDto conflictResponse = new BookingConflictResponseDto();
+        if (conflictBooking == null) {
+            conflictResponse.setHasConflict(false);
+            return conflictResponse;
+        }
+
+        conflictResponse.setHasConflict(true);
+        conflictResponse.setConflictBooking(conflictBooking);
+        return conflictResponse;
+    }
 }

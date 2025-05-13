@@ -10,9 +10,9 @@ import com.sjsu.booktable.model.entity.Photo;
 import com.sjsu.booktable.model.entity.Restaurant;
 import com.sjsu.booktable.repository.RestaurantRepository;
 import com.sjsu.booktable.service.booking.BookingService;
+import com.sjsu.booktable.service.review.ReviewService;
 import com.sjsu.booktable.service.s3.S3Service;
 import com.sjsu.booktable.validator.RestaurantValidator;
-import com.sjsu.booktable.repository.ReviewRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +37,7 @@ class RestaurantServiceImplTest {
     private RestaurantRepository restaurantRepository;
 
     @Mock
-    private ReviewRepository reviewRepository; // You likely already added this
+    private ReviewService reviewService;
 
     @Mock
     private TableService tableService;
@@ -280,7 +280,7 @@ class RestaurantServiceImplTest {
         when(bookingService.getBookedCapacitiesForSlotsForRestaurant(anyInt(), any(), any()))
                 .thenReturn(new HashMap<>());
 
-        when(reviewRepository.getAverageRatingByRestaurant(anyInt())).thenReturn(4.0); // Or a specific value for a specific ID
+        when(reviewService.getAverageRatingByRestaurant(anyInt())).thenReturn(4.0);
 
         // Act
         RestaurantSearchResponse response = restaurantService.searchRestaurants(searchRequest);
