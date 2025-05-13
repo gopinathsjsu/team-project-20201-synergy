@@ -36,8 +36,7 @@ export default function RestaurantCard({
     availableTimeSlots,
     mainPhotoUrl,
     id,
-    averageRating,
-    reviewCount,
+    avgRating,
     bookingCount,
   } = restaurant;
 
@@ -201,11 +200,11 @@ export default function RestaurantCard({
         </Stack>
 
         {/* Rating and Review Count */}
-        {typeof averageRating === 'number' && (
+        {typeof avgRating === 'number' && (
           <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
             <Rating
               name="restaurant-rating"
-              value={averageRating}
+              value={avgRating}
               precision={0.5}
               readOnly
               size="small"
