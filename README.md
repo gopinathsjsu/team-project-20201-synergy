@@ -13,7 +13,8 @@
 - [📌 Project Overview](#project-overview)
 - [✨ Features](#features)
 - [🚀 Tech Stack](#tech-stack)
-- [🏗️ Architecture & Design](#architecture--design)
+- [🏗️ Architecture Design](#architecture-design)
+- [📝 Project Journal Documentation](#project-journals-documentation)
 - [🧰 Getting Started](#getting-started)
   - [📦 Prerequisites](#prerequisites)
   - [⚙️ Backend Setup](#backend-setup)
@@ -21,7 +22,6 @@
 - [▶️ Running the Application](#running-the-application)
 - [🚀 Deployment](#deployment)
 - [🔄 CI/CD](#cicd)
-- [📝 Project Journals & Documentation](#project-journals--documentation)
 - [🤝 Contributing](#contributing)
 - [💡 XP Core Values](#xp-core-values)
 
@@ -73,11 +73,10 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
   - AWS Elastic Beanstalk, EC2, Docker, ECR
   - AWS S3, SES, Lambda
 - **APIs:** Google Maps GeoAPI
-- **Templating:** Thymeleaf
 
 ---
 
-## 🏗️ Architecture & Design
+## 🏗️ Architecture Design
 - RESTful API architecture
 - JWTs stored in HTTP-only cookies
 - Role-based access (CUSTOMER, MANAGER, ADMIN)
@@ -93,6 +92,8 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 - [ER Diagram](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/er_diagram.png)
 - [Scrum Report](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/scrum_report.md)
 - [XP Values](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/xp-values.md)
+- [Figma Design](https://www.figma.com/design/yigtQrOAV7XX2CaLXjabAl/SynergyCMPE202?node-id=22-1221&t=t2yjRMXyx6Cgmn8f-0)
+- [Confluence Docs](https://cmpe-202-synergy.atlassian.net/wiki/spaces/SCRUM/pages/1376379/BookTable+-+Product+Description)
 
 
 ---
@@ -138,16 +139,12 @@ npm run dev
 
 ### Deployment
 - Backend: Dockerized, pushed to ECR, deployed via Elastic Beanstalk
-- Frontend: Deployed to Vercel or any Node.js hosting platform
+- Frontend: Deployed to FrontEnd
 
 ### CI/CD
 - CI/CD with GitHub Actions
 - backend-ci-cd.yml: builds, tests, pushes to ECR, deploys to Elastic Beanstalk
 - codeql.yml: scans Java/Kotlin codebase
-
-### Project Journals & Documentation
-- Figma Design: View Prototype
-- Confluence Docs: View Product Description
 
 **In-Repo Docs:**
 
@@ -167,7 +164,7 @@ npm run dev
 Email Integration, Restaurant Manager portal
 
 **Jeevan Kurian**
-Project documentation, Admin portal (UI + backend)
+- Project documentation, Admin portal (UI + backend)
 Ratings/Reviews system, Admin analytics ( UI + Backend)
 
 ### 💡 XP Core Values
