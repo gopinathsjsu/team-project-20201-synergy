@@ -3,6 +3,8 @@
 # 🍽️ SYNERGY - BookTable
 
 ## 👥 Team Members
+**- One team member dropped the course, so we redistributed the work among the three remaining members**
+- 
 - [Rajeev Ranjan Chaurasia](https://github.com/rajeev-chaurasia)
 - [Tushar Singh](https://github.com/)
 - [Jeevan Kurian](https://github.com/)
