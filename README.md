@@ -41,6 +41,7 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 - Location-based search (MySQL spatial + Google Maps API)
 - View locations on Google Maps
 - Nearby restaurant suggestions
+- User can see any restaurant number of bookings on a particular day
 
 ### 📅 Booking Management
 - Booking and cancellation with real-time conflict detection
