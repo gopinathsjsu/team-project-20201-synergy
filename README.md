@@ -126,26 +126,26 @@ chmod +x ./gradlew
 ./gradlew clean build
 ./gradlew bootRun
 ```
-###💻 Frontend Setup
+### Frontend Setup
 ```bash
 cd open-table-frontend
 npm install
 npm run dev
 ```
-###▶️ Running the Application
+### Running the Application
 **Backend API**: http://localhost:8080
 **Frontend UI**: http://localhost:3000
 
-###🚀 Deployment
+### Deployment
 - Backend: Dockerized, pushed to ECR, deployed via Elastic Beanstalk
 - Frontend: Deployed to Vercel or any Node.js hosting platform
 
-###🔄 CI/CD
+### CI/CD
 - CI/CD with GitHub Actions
 - backend-ci-cd.yml: builds, tests, pushes to ECR, deploys to Elastic Beanstalk
 - codeql.yml: scans Java/Kotlin codebase
 
-###📝 Project Journals & Documentation
+### Project Journals & Documentation
 - Figma Design: View Prototype
 - Confluence Docs: View Product Description
 
@@ -157,7 +157,7 @@ npm run dev
 
 **XP Core Values**
 
-###🤝 Contributing
+### 🤝Contributing
 **Tushar Singh**
 - Frontend UI: Login, Registration, Search, Home, Profile
 - Backend: Booking flow, booking APIs, conflict resolution
@@ -170,7 +170,7 @@ Email Integration, Restaurant Manager portal
 Project documentation, Admin portal (UI + backend)
 Ratings/Reviews system, Admin analytics ( UI + Backend)
 
-###💡 XP Core Values
+### 💡 XP Core Values
 - Communication: Stand-ups, Figma, Confluence, transparency
 - Courage: Embraced new tech, role expansions, learned AWS stack
 - Respect: Code reviews, professionalism, empathy, shared ownership
