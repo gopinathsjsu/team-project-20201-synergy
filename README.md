@@ -6,8 +6,8 @@
 **- One team member dropped the course, so we redistributed the work among the three remaining members**
 - 
 - [Rajeev Ranjan Chaurasia](https://github.com/rajeev-chaurasia)
-- [Tushar Singh](https://github.com/)
-- [Jeevan Kurian](https://github.com/)
+- [Tushar Singh](https://github.com/tushar-fs)
+- [Jeevan Kurian](https://github.com/JeevanKurian)
 
 ---
 
@@ -16,7 +16,7 @@
 - [✨ Features](#features)
 - [🚀 Tech Stack](#tech-stack)
 - [🏗️ Architecture Design](#architecture-design)
-- [📝 Project Journal Documentation](#project-journals-documentation)
+- [📝 Project Journal](#project-journal)
 - [🧰 Getting Started](#getting-started)
   - [📦 Prerequisites](#prerequisites)
   - [⚙️ Backend Setup](#backend-setup)
@@ -24,17 +24,17 @@
 - [▶️ Running the Application](#running-the-application)
 - [🚀 Deployment](#deployment)
 - [🔄 CI/CD](#cicd)
-- [🤝 Contributing](#contributing)
+- [🤝 Contributing](#contributinons)
 - [💡 XP Core Values](#xp-core-values)
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 SYNERGY, also known as BookTable, is a comprehensive online restaurant reservation platform for customers, restaurant managers, and administrators. It features location-based search, real-time booking, user profiles, and a review system to enhance the dining experience.
 
 ---
 
-## ✨ Features
+## Features
 
 ### 🔐 User Authentication
 - AWS Cognito with OTP-based login and role-based access via Cognito Groups
@@ -67,7 +67,7 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 - **Frontend:** Next.js, React, Material-UI
 - **Backend:** Spring Boot (Java 17), Gradle
 - **Database:** MySQL
@@ -79,7 +79,7 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 
 ---
 
-## 🏗️ Architecture Design
+## Architecture Design
 - RESTful API architecture
 - JWTs stored in HTTP-only cookies
 - Role-based access (CUSTOMER, MANAGER, ADMIN)
@@ -87,7 +87,8 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 - Component-based frontend with Next.js
 - Deployed using Docker containers on AWS Elastic Beanstalk
 
-### [Project Journal](https://github.com/gopinathsjsu/team-project-20201-synergy/tree/main/project-journal)
+### Project Journal
+[Project Journal](https://github.com/gopinathsjsu/team-project-20201-synergy/tree/main/project-journal)
 
 - [Contributions of Each Team Member](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/contributions.md)
 - [Deployment_Diagram](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/deployment_diagram.svg)
@@ -101,9 +102,9 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 
 ---
 
-## 🧰 Getting Started
+## Getting Started
 
-### 📦 Prerequisites
+### Prerequisites
 - Node.js (v18.x or v20.x)
 - JDK 17
 - Gradle (uses wrapper)
@@ -123,7 +124,7 @@ AWS_COGNITO_REGION, AWS_S3_BUCKET, GOOGLE_API_KEY, APP_BASE_URL, AWS_SES_FROM_EM
 **Frontend:** (`.env.local`):
 NEXT_PUBLIC_BASE_URL, NEXT_PUBLIC_PLACES_API_KEY
 
-### ⚙️ Backend Setup
+### Backend Setup
 ```bash
 cd backend/bookTable
 chmod +x ./gradlew
@@ -157,7 +158,8 @@ npm run dev
 
 **XP Core Values**
 
-### 🤝Contributing
+### Contributinons 
+[Contributions of Each Team Member in Detail in contributions.md](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/contributions.md)
 **Tushar Singh**
 - Frontend UI: Login, Registration, Search, Home, Profile
 - Backend: Booking flow, booking APIs, conflict resolution
@@ -167,10 +169,10 @@ npm run dev
 Email Integration, Restaurant Manager portal
 
 **Jeevan Kurian**
-- Project documentation, Admin portal (UI + backend)
-Ratings/Reviews system, Admin analytics ( UI + Backend)
+- Project Confluence documentation, Admin portal (UI + backend)
+Ratings/Reviews system, Admin analytics,Writing Readme ( UI + Backend)
 
-### 💡 XP Core Values
+### XP Core Values
 - Communication: Stand-ups, Figma, Confluence, transparency
 - Courage: Embraced new tech, role expansions, learned AWS stack
 - Respect: Code reviews, professionalism, empathy, shared ownership
