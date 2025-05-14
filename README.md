@@ -85,7 +85,15 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 - Component-based frontend with Next.js
 - Deployed using Docker containers on AWS Elastic Beanstalk
 
-📄 [Design Decisions Document](https://www.google.com/search?q=./project-journal/design-decision.md)
+### [Project Journal](https://github.com/gopinathsjsu/team-project-20201-synergy/tree/main/project-journal)
+
+- [Contributions of Each Team Member](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/contributions.md)
+- [Deployment_Diagram](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/deployment_diagram.svg)
+- [Design Decisions Document](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/design-decision.md)
+- [ER Diagram](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/er_diagram.png)
+- [Scrum Report](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/scrum_report.md)
+- [XP Values](https://github.com/gopinathsjsu/team-project-20201-synergy/blob/main/project-journal/xp-values.md)
+
 
 ---
 
@@ -101,14 +109,14 @@ SYNERGY, also known as BookTable, is a comprehensive online restaurant reservati
 
 **Environment Variables**
 
-**Backend** (`application.properties`):
+**Backend:** (`application.properties`):
 DB_URL, DB_USERNAME, DB_PASSWORD
 AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 SPRING_SECURITY_OAUTH2_JWT_ISSUER_URI
 AWS_COGNITO_USER_POOL_ID, AWS_COGNITO_CLIENT_ID, AWS_COGNITO_CLIENT_SECRET
 AWS_COGNITO_REGION, AWS_S3_BUCKET, GOOGLE_API_KEY, APP_BASE_URL, AWS_SES_FROM_EMAIL
 
-**Frontend** (`.env.local`):
+**Frontend:** (`.env.local`):
 NEXT_PUBLIC_BASE_URL, NEXT_PUBLIC_PLACES_API_KEY
 
 ### ⚙️ Backend Setup
